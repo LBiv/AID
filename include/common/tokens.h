@@ -2,14 +2,14 @@
 #define AID_COMMON_TOKENS
 
 typedef struct {
-    signkey_public_t *signing;
-    enckey_public_t *encryption;
-    signkey_public_t *auxiliary;    
+    aid_signkey_public_t *signing;
+    aid_enckey_public_t *encryption;
+    aid_signkey_public_t *auxiliary;    
 } aid_provider_token_t;
 
 typedef struct {
-    signkey_public_t *signing;
-    enckey_public_t *encryption;
+    aid_signkey_public_t *signing;
+    aid_enckey_public_t *encryption;
 } aid_user_token_t;
 
 
