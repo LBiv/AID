@@ -16,4 +16,3 @@ char const *
 aid_error_info(int errcode);
 
 #endif
-
