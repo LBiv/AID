@@ -1,27 +1,29 @@
-#ifndef AID_CORE_ASYMSIGN
-#define AID_CORE_ASYMSIGN
+#ifndef AID_CRYPTO_ASYMSIGN
+#define AID_CRYPTO_ASYMSIGN
 
-#include "aid/core/asymkeys.h"
+#include "aid/crypto/asymkeys.h"
 
 //Must remain less than 256
-#define AID_ASYMSIGN_ALGO_NUM 1
+#define AID_ASYMSIGN_NUM 1
 
 typedef struct {
-    aid_asymkeys_algo_t key_type;
+    aid_asymkeys_t key_type;
     size_t sig_size;
     char const *name;
 } aid_asymsign_index_t;
 
-extern aid_asymsign_index_t aid_asymsign_index[AID_ASYMSIGN_ALGO_NUM];
-
 typedef enum {
     AID_ASYMSIGN_EDDSA = 1
-} aid_asymsign_algo_t;
+} aid_asymsign_t;
 
+
+aid_asymsign_index_t const *
+aid_asymsign_index(
+    aid_asymsign_t type);
 
 int
 aid_signing_sign(
-    aid_asymsign_algo_t type,
+    aid_asymsign_t type,
     unsigned char const *data,
     size_t dsize,
     aid_asymkeys_private_t const *key,
@@ -29,7 +31,7 @@ aid_signing_sign(
 
 int
 aid_signing_verify(
-    aid_asymsign_algo_t type,
+    aid_asymsign_t type,
     unsigned char const *data,
     size_t dsize,
     unsigned char const *sigbuf,
