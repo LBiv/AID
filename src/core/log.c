@@ -4,7 +4,7 @@ static __thread aid_log_t aid_log= {
     NULL,    
     NULL,
     NULL
-}
+};
 
 void
 aid_log_init(
