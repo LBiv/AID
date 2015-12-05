@@ -18,5 +18,7 @@ char const *aid_error_array[AID_ERR_NUM] = {
     "AID_ERR_RETURN [-1]: An error return propagated down the callstack",
     "AID_ERR_NULL_PTR [-2]: NULL pointer was passed into function",
     "AID_ERR_BAD_PARAM [-3]: Invalid parameter was passed into function",
-    "AID_ERR_NO_MEM [-4]: Failed to allocate memory on the heap"
+    "AID_ERR_NO_MEM [-4]: Failed to allocate memory on the heap",
+    "AID_ERR_RNG [-5]: Error generating random values",
+    "AID_ERR_CRYPTO [-6]: Error occurred in the cryptographic library"
 };
