@@ -93,7 +93,7 @@ asymkeys_public_ed25519(
     unsigned char const *priv,
     unsigned char *pub)
 {
-    memcpy(priv + 32, pub, 32);
+    memcpy(pub, priv + 32, 32);
 
     return 0;
 }
