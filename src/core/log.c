@@ -1,6 +1,7 @@
 #include "aid/core/log.h"
 
-static __thread aid_log_t aid_log= {
+static __thread aid_log_t aid_log =
+{
     NULL,    
     NULL,
     NULL
@@ -8,9 +9,9 @@ static __thread aid_log_t aid_log= {
 
 void
 aid_log_init(
-    aid_log_func debug,
-    aid_log_func info,
-    aid_log_func error)
+    aid_log_func_t debug,
+    aid_log_func_t info,
+    aid_log_func_t error)
 {
     aid_log->debug = debug;
     aid_log->info = info;
