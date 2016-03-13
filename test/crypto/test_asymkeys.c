@@ -23,7 +23,7 @@ START_TEST(test_asymkeys_generate)
         aid_asymkeys_cleanup_priv(&priv);
         aid_asymkeys_cleanup_pub(&pub);
 
-        ck_assert_msg(state == 0, "Failed to generate keys of type %s.\n", aid_asymkeys_index(i)->name);
+        ck_assert_msg(res == 0, "Failed to generate keys of type %s.\n", aid_asymkeys_index(i)->name);
 
     }
 
@@ -61,9 +61,9 @@ START_TEST(test_asymkeys_public)
 }
 END_TEST
 
-
  
-Suite * asymkeys_suite(void)
+Suite *
+asymkeys_suite(void)
 {
     Suite *s;
     TCase *tc_core;
@@ -80,7 +80,9 @@ Suite * asymkeys_suite(void)
     return s;
 }
 
-int main(void)
+
+int
+main(void)
 {
     int number_failed;
     Suite *s;

@@ -22,15 +22,18 @@ aid_asymsign_index(
     aid_asymsign_t type);
 
 int
-aid_signing_sign(
+aid_asymsign_sign(
     aid_asymsign_t type,
     unsigned char const *data,
     size_t dsize,
-    aid_asymkeys_private_t const *key,
-    unsigned char *sigbuf);
+    unsigned char *sigbuf,
+    size_t bufsize,
+    aid_asymkeys_private_t const *key);
 
+// 0 is valid signature
+// 1 is invalid signature
 int
-aid_signing_verify(
+aid_asymsign_verify(
     aid_asymsign_t type,
     unsigned char const *data,
     size_t dsize,
