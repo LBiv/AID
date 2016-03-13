@@ -1,4 +1,4 @@
-#include "aid/acrypto/asymsign.h"
+#include "aid/crypto/asymsign.h"
 
 #include "tweetnacl.h"
 
@@ -123,17 +123,17 @@ aid_asymsign_index(
 {
     switch (type) {
 
-        case AID_ASYMSIGN_EDDSA:
-            return (aid_asymkeys_index_t const *) &{
-                AID_ASYMKEYS_ED25519,
-                64,
-                "Eddsa Curve25519",
-                &asymsign_sign_eddsa,
-                &asymsign_verify_eddsa
-            };
-        default:
-            AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid asymmetric signing algorithm specified");
-            return NULL;
+    case AID_ASYMSIGN_EDDSA:
+        return (aid_asymkeys_index_t const *) &{
+            AID_ASYMKEYS_ED25519,
+            64,
+            "Eddsa Curve25519",
+            &asymsign_sign_eddsa,
+            &asymsign_verify_eddsa
+        };
+    default:
+        AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid asymmetric signing algorithm specified");
+        return NULL;
 
     }
 
@@ -164,7 +164,7 @@ aid_asymsign_sign(
     }
 
     if (!(index = aid_asymkeys_index(type))) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid);
         goto out;
     }
 

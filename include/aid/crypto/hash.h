@@ -3,12 +3,6 @@
 
 #define AID_HASH_NUM 1
 
-typedef struct {
-    size_t hash_size;
-} aid_hash_index_t;
-
-extern aid_hash_index_t aid_hash_index[AID_HASH_ALGO_NUM];
-
 typedef enum {
     AID_HASH_SHA512 = 1
 } aid_hash_t;
@@ -25,6 +19,8 @@ aid_hash_digest(
     size_t dsize,
     unsigned char *hashbuf);
 
+// 0 is valid hash
+// 1 is invalid hash
 int
 aid_hash_verify(
     aid_hash_t type,

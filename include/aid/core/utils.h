@@ -7,7 +7,17 @@ aid_utils_wipe(
     unsigned char *buf,
     size_t bufsize);
 
+/**simple rand */
+int
+aid_utls_rand(
+    void *ctx,
+    unsigned char *buf,
+    size_t bufsize);
+
+
+
 /** encoding **/
+
 
 
 
