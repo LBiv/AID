@@ -80,7 +80,7 @@ out:
 
 
 
-static aid_hash_index_t const *
+aid_hash_index_t const *
 aid_hash_index(
     aid_hash_t type)
 {

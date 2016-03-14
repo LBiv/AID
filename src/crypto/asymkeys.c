@@ -119,7 +119,7 @@ out:
 }
 
 
-static aid_asymkeys_index_t const *
+aid_asymkeys_index_t const *
 aid_asymkeys_index(
     aid_asymkeys_t type)
 {
@@ -196,6 +196,8 @@ aid_asymkeys_generate(
         AID_LOG_ERROR(AID_ERR_RETURN, NULL);
         goto cleanup_pub;
     }
+
+    return state;
 
 cleanup_pub:
     aid_asymkeys_cleanup_pub(pub);

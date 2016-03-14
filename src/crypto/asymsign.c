@@ -4,8 +4,9 @@
 
 #include "aid/core/error.h"
 #include "aid/core/log.h"
-#include "aid/crypto/util.h"
+#include "aid/core/util.h"
 #include "aid/crypto/asymkeys.h"
+
 
 typedef int (*asymsign_sign_t)(
     unsigned char const *,
@@ -117,7 +118,7 @@ out:
 }
 
 
-static aid_asymsign_index_t const *
+aid_asymsign_index_t const *
 aid_asymsign_index(
     aid_asymsign_t type)
 {
@@ -127,7 +128,7 @@ aid_asymsign_index(
         return (aid_asymkeys_index_t const *) &{
             AID_ASYMKEYS_ED25519,
             64,
-            "Eddsa Curve25519",
+            "EdDSA Curve25519",
             &asymsign_sign_eddsa,
             &asymsign_verify_eddsa
         };
@@ -164,7 +165,7 @@ aid_asymsign_sign(
     }
 
     if (!(index = aid_asymkeys_index(type))) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid);
+        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid signing algorithm was specified");
         goto out;
     }
 
