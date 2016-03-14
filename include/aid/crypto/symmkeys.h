@@ -8,7 +8,7 @@
 
 typedef enum {
     AID_SYMMKEYS_AES256 = 1,
-    AID_SYMMKEYS_XSALSA20,
+    AID_SYMMKEYS_XSALSA20
 } aid_symmkeys_t;
 
 typedef struct {
