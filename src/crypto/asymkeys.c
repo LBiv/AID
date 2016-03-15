@@ -197,6 +197,9 @@ aid_asymkeys_generate(
         goto cleanup_pub;
     }
 
+    priv->type = type;
+    pub->type = type;
+
     return state;
 
 cleanup_pub:
@@ -239,6 +242,10 @@ aid_asymkeys_public(
         AID_LOG_ERROR(AID_ERR_RETURN, NULL);
         goto cleanup_pub;
     }
+
+    pub->type = priv->type;
+
+    return state;
 
 cleanup_pub:
     aid_asymkeys_cleanup_pub(pub);

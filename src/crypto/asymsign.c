@@ -150,7 +150,6 @@ aid_asymsign_sign(
     unsigned char *sigbuf,
     size_t bufsize)
 {
-
     aid_asymkeys_index_t const *index;
     int state = 0;
 

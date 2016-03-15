@@ -74,10 +74,12 @@ aid_symmkeys_generate(
         goto cleanup_key;
     }
 
+    key->type = type;
+
     return state;
 
 cleanup_key:
-    free(key->key);
+    aid_symmkeys_cleanup(key);
 out:
     return state;
 }
