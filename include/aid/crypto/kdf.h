@@ -1,6 +1,7 @@
 #ifndef AID_CRYPTO_KDF
 #define AID_CRYPTO_KDF
 
+#include "aid/crypto/general.h"
 #include "aid/crypto/asymkeys.h"
 #include "aid/crypto/symmkeys.h"
 #include "aid/crypto/symmcrypt.h"
@@ -11,6 +12,14 @@
 typedef enum {
     AID_KDF_CURVE25519_ECDH__XSALSA20 = 1
 } aid_kdf_t;
+
+typedef struct {
+    aid_asymkeys_t input_type;
+    aid_symmkeys_t key_type;
+    char const *name;
+    kdf_compute_t compute;
+} aid_kdf_index_t;
+
 
 aid_kdf_index_t const *
 aid_kdf_index(

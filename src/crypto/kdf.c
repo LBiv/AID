@@ -6,18 +6,6 @@
 #include "aid/core/log.h"
 #include "aid/crypto/symmkeys.h"
 
-typedef int (*kdf_compute_t)(
-    unsigned char const *,
-    unsigned char const *,
-    unsigned char *);
-
-typedef struct {
-    aid_asymkeys_t input_type;
-    aid_symmkeys_t key_type;
-    char const *name;
-    kdf_compute_t compute;
-} aid_kdf_index_t;
-
 
 static int
 kdf_compute_curve25519_ecdh_xsalsa20(

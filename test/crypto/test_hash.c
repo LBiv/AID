@@ -5,7 +5,7 @@
 
 START_TEST(test_hash_digest_verify)
 {
-    char const *data = "This is some data to test the hashing functions. Hash hash hash data data data function function function"
+    char const *data = "This is some data to test the hashing functions. Hash hash hash data data data function function function";
     int res;
     size_t dsize, hashsize;
     unsigned char *hashbuf;
@@ -13,7 +13,7 @@ START_TEST(test_hash_digest_verify)
     dsize = strlen(data);
 
     for(unsigned int i = 1; i <= AID_HASH_NUM; ++i) {
-        hashsize = aid_asymkeys_index(i)->hash_size;
+        hashsize = aid_hash_index(i)->hash_size;
         hashbuf = malloc(hashsize);
         ck_assert_msg(hashbuf != NULL, "Failed to allocate memory for hash buffer.\n");
 
@@ -62,7 +62,7 @@ hash_suite(void)
 
     tc_core = tcase_create("Main");
 
-    tcase_add_test(tc_core, test_hash_sign_verify);
+    tcase_add_test(tc_core, test_hash_digest_verify);
     suite_add_tcase(s, tc_core);
 
     return s;

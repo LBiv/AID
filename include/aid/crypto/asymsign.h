@@ -1,20 +1,24 @@
 #ifndef AID_CRYPTO_ASYMSIGN
 #define AID_CRYPTO_ASYMSIGN
 
+#include "aid/crypto/general.h"
 #include "aid/crypto/asymkeys.h"
 
 //Must remain less than 256
 #define AID_ASYMSIGN_NUM 1
 
-typedef struct {
-    aid_asymkeys_t key_type;
-    size_t sig_size;
-    char const *name;
-} aid_asymsign_index_t;
 
 typedef enum {
     AID_ASYMSIGN_EDDSA = 1
 } aid_asymsign_t;
+
+typedef struct { 
+    aid_asymkeys_t key_type; 
+    size_t sig_size; 
+    char const *name; 
+    asymsign_sign_t sign;
+    asymsign_verify_t verify;
+} aid_asymsign_index_t;
 
 
 aid_asymsign_index_t const *

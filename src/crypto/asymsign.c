@@ -8,27 +8,6 @@
 #include "aid/crypto/asymkeys.h"
 
 
-typedef int (*asymsign_sign_t)(
-    unsigned char const *,
-    size_t,
-    unsigned char *,
-    unsigned char const *);
-
-typedef int (*asymsign_verify_t)(
-    unsigned char const *,
-    size_t,
-    unsigned char const *,
-    unsigned char const *);
-
-typedef struct { 
-    aid_asymkeys_t key_type; 
-    size_t sig_size; 
-    char const *name; 
-    asymsign_sign_t sign;
-    asymsign_verify_t verify;
-} aid_asymsign_index_t;
-
-
 static int
 asymsign_sign_eddsa(
     unsigned char const *data,

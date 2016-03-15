@@ -6,24 +6,6 @@
 #include "aid/core/log.h"
 #include "aid/crypto/util.h"
 
-typedef int (*asymkeys_generate_t)(
-    rng_function_t,
-    void *,
-    unsigned char *,
-    unsigned char *);
-
-typedef int (*asymkeys_public_t)(
-    unsigned char const *,
-    unsigned char *);
-
-typedef struct {
-    size_t priv_size;
-    size_t pub_size;
-    char const *name;
-    asymkeys_generate_t generate;
-    asymkeys_public_t public;
-} aid_asymkeys_index_t;
-
 
 static int
 asymkeys_generate_ed25519(
@@ -235,7 +217,7 @@ aid_asymkeys_public(
 
     memset(pub->key, 0, index->pub_size);
 
-    if ((state = index->generate(
+    if ((state = index->pub(
         priv->key,
         pub->key)) < 0)
     {

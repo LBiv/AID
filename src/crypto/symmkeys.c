@@ -5,11 +5,6 @@
 #include "aid/core/log.h"
 #include "aid/core/util.h"
 
-typedef struct {
-    size_t key_size;
-    char const *name;
-} aid_symmkeys_index_t;
-
 
 aid_symmkeys_index_t const *
 aid_symmkeys_index(

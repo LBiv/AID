@@ -65,8 +65,8 @@ START_TEST(test_asymsign_sign_verify)
         ck_assert_msg(res == 1, "Failed to detect invalid signature with algorithm %s.\n", aid_asymsign_index(i)->name);
 
         free(sigbuf);
-        aim_asymkeys_cleanup_priv(&priv);
-        aim_asymkeys_cleanup_pub(&pub);
+        aid_asymkeys_cleanup_priv(&priv);
+        aid_asymkeys_cleanup_pub(&pub);
     }
 
 }

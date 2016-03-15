@@ -1,6 +1,7 @@
 #ifndef AID_CRYPTO_SYMMCRYPT
 #define AID_CRYPTO_SYMMCRYPT
 
+#include "aid/crypto/general.h"
 #include "aid/crypto/symmkeys.h"
 
 //Must remain less than 256
@@ -10,6 +11,19 @@
 typedef enum {
     AID_SYMMCRYPT_XSALSA20 = 1
 } aid_symmcrypt_t;
+
+typedef struct {
+    aid_symmkeys_t key_type;
+    size_t iv_size;
+//TODO
+//For ciphers that include a signature (such as AES-GCM add MAC key information
+//here
+    char const *name;
+    symmcrypt_encrypt_t encrypt;
+    symmcrypt_decrypt_t decrypt;
+    symmcrypt_cipherlen_t cipherlen;
+    symmcrypt_plainlen_t plainlen;
+} aid_symmcrypt_index_t;
 
 
 aid_symmcrypt_index_t const *

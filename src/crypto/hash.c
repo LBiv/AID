@@ -5,23 +5,6 @@
 #include "aid/core/error.h"
 #include "aid/core/log.h"
 
-typedef int (*hash_digest_t) (
-    unsigned char const *,
-    size_t,
-    unsigned char *);
-
-typedef int (*hash_verify_t) (
-    unsigned char const *,
-    size_t,
-    unsigned char const *);
-
-typedef struct {
-    size_t hash_size;
-    char const *name;
-    hash_digest_t digest;
-    hash_verify_t verify;
-} aid_hash_index_t;
-
 
 static int
 hash_digest_sha512(
@@ -152,7 +135,7 @@ aid_hash_verify(
     aid_hash_t type,
     unsigned char const *data,
     size_t dsize,
-    unsigned char *hashbuf,
+    unsigned char const *hashbuf,
     size_t bufsize)
 {
     aid_hash_index_t const *index;

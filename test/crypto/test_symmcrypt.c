@@ -17,7 +17,7 @@ START_TEST(test_symmcrypt_encrypt_decrypt)
 
     dsize = strlen(data);
 
-    for (unsigned int = 1; i <= AID_SYMMCRYPT_NUM; ++i) {
+    for (unsigned int i = 1; i <= AID_SYMMCRYPT_NUM; ++i) {
         index = aid_symmcrypt_index(i);
         keytype = index->key_type;
         res = aid_symmkeys_generate(
@@ -52,7 +52,7 @@ START_TEST(test_symmcrypt_encrypt_decrypt)
             csize,
             iv,
             ivsize,
-            key);
+            &key);
 
         ck_assert_msg(res == 0, "Failed to encrypt data with algorithm %s.\n", index->name);
 
@@ -68,7 +68,7 @@ START_TEST(test_symmcrypt_encrypt_decrypt)
             psize,
             iv,
             ivsize,
-            key);
+            &key);
 
         ck_assert_msg(res == 0, "Failed to decrypt data with algorithm %s.\n", index->name);
 
@@ -78,6 +78,7 @@ START_TEST(test_symmcrypt_encrypt_decrypt)
         free(iv);
         free(cipher);
         free(plain);
+        aid_symmkeys_cleanup(&key);
     }
 
 }

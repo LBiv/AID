@@ -9,7 +9,7 @@ aid_utils_wipe(
 
 /**simple rand */
 int
-aid_utls_rand(
+aid_utils_rand(
     void *ctx,
     unsigned char *buf,
     size_t bufsize);

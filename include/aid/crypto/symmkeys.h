@@ -16,6 +16,11 @@ typedef struct {
     unsigned char *key;
 } aid_symmkeys_key_t;
 
+typedef struct {
+    size_t key_size;
+    char const *name;
+} aid_symmkeys_index_t;
+
 
 aid_symmkeys_index_t const *
 aid_symmkeys_index(
@@ -23,6 +28,7 @@ aid_symmkeys_index(
 
 int
 aid_symmkeys_generate(
+    aid_symmkeys_t type,
     rng_function_t,
     void *p_rng,
     aid_symmkeys_key_t *key);

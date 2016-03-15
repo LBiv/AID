@@ -7,42 +7,6 @@
 #include "aid/crypto/symmkeys.h"
 
 
-typedef int (*symmcrypt_encrypt_t)(
-    unsigned char const *,
-    size_t,
-    unsigned char *,
-    size_t,
-    unsigned char const *,
-    unsigned char const *);
-
-typedef int (*symmcrypt_decrypt_t)(
-    unsigned char const *,
-    size_t,
-    unsigned char *,
-    size_t,
-    unsigned char const *,
-    unsigned char const *);
-
-typedef size_t (*symmcrypt_cipherlen_t)(
-    size_t);
-
-typedef size_t (*symmcrypt_plainlen_t)(
-    size_t);
-
-typedef struct {
-    aid_symmkeys_t key_type;
-    size_t iv_size;
-//TODO
-//For ciphers that include a signature (such as AES-GCM add MAC key information
-//here
-    char const *name;
-    symmcrypt_encrypt_t encrypt;
-    symmcrypt_decrypt_t decrypt;
-    symmcrypt_cipherlen_t cipherlen;
-    symmcrypt_plainlen_t plainlen;
-} aid_symmcrypt_index_t;
-
-
 static int
 symmcrypt_encrypt_xsalsa20(
     unsigned char const *data,

@@ -45,7 +45,7 @@ START_TEST(test_asymkeys_public)
             &pub1);
 
         res = aid_asymkeys_public(
-            (aid_asymkeys_private const *) &priv,
+            (aid_asymkeys_private_t const *) &priv,
             &pub2);
 
         ck_assert_msg(res == 0, "Failed to calculate public key of type %s.\n", aid_asymkeys_index(i)->name);
