@@ -10,14 +10,18 @@
 C_SRCS = $(wildcard *.c)
 OBJS = $(C_SRCS:.c=.o)
 
+CFLAGS=-c -Wall
+
 all: $(OBJS)
 	@echo building all from $(C_SRCS) and $(OBJS)
 
 
 $(OBJS): %.o: %.c
-	$(CC) -c -g -I../../include -o $@ $<
+	$(CC) $(CFLAGS) -g -I../../include -o $@ $<
 
 #
 #all : $(C_SRCS)
 #echo $(C_SRCS)
 
+clean:
+	rm *.o

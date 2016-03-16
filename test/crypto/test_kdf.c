@@ -58,7 +58,7 @@ START_TEST(test_kdf_compute)
         ck_assert_msg(res == 0, "Failed to compute symmetric key with KDF algorithm %s.\n", index->name);
         ck_assert_msg((key1.type == key2.type) && (key1.type == index->key_type),
                 "Failed to compute keys of correct types with KDF algorithm %s.\n", index->name);
-        memcmp(key1.key, key2.key, symmsize);
+        res = memcmp(key1.key, key2.key, symmsize);
         ck_assert_msg(res == 0, "Different keys were produced using KDF algorithm %s.\n", index->name);
 
         aid_asymkeys_cleanup_pub(&pub1);
