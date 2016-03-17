@@ -2,7 +2,7 @@
 
 #include "tweetnacl.h"
 
-#include "aid/core/error"
+#include "aid/core/error.h"
 #include "aid/core/log.h"
 #include "aid/crypto/util.h"
 

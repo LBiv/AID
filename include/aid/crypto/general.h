@@ -1,6 +1,8 @@
 #ifndef AID_CRYPTO_GENERAL
 #define AID_CRYPTO_GENERAL
 
+#include <stddef.h>
+
 // RNG function type
 typedef int (*rng_function_t)(
     void *,
