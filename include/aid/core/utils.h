@@ -1,6 +1,8 @@
 #ifndef AID_CORE_UTILS
 #define AID_CORE_UTILS
 
+#include <stddef.h>
+
 /**secure memory wipe */
 int
 aid_utils_wipe(

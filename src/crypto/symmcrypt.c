@@ -24,8 +24,10 @@ symmcrypt_encrypt_xsalsa20(
         iv,
         key) != 0)
     {
-        state = AID_LOG_ERROR(AID_ERR_CRYPTO, NULL);
+        AID_LOG_ERROR(state = AID_ERR_CRYPTO, NULL);
     }
+
+    return state;
 }
 
 
@@ -46,7 +48,7 @@ symmcrypt_decrypt_xsalsa20(
         iv,
         key) != 0)
     {
-        state = AID_LOG_ERROR(AID_ERR_CRYPTO_NULL);
+        AID_LOG_ERROR(state = AID_ERR_CRYPTO, NULL);
     }
 
     return state;
@@ -69,31 +71,6 @@ symmcrypt_plainlen_xsalsa20(
 }
 
 
-aid_symmcrypt_index_t const *
-aid_symmcrypt_index(
-    aid_symmcrypt_t type)
-{
-    switch (type) {
-
-    case AID_SYMMCRYPT_XSALSA20:
-        return (aid_symmcrypt_index_t const *) &{
-            AID_SYMMKEYS_XSALSA20,
-            24,
-            "XSALSA20",
-            &symmcrypt_encrypt_xsalsa20,
-            &symmcrypt_decrypt_xsalsa20,
-            &symmcrypt_cipherlen_xsalsa20,
-            &symmcrypt_plainlen_xsalsa20
-        };
-    default:
-        AID_LOG_ERROR(AID_BAD_PARAM, "Invalid symmetric cipher algorithm specified");
-        return NULL;
-
-    }
-
-}
-
-
 int
 aid_symmcrypt_encrypt(
     aid_symmcrypt_t type,
@@ -109,36 +86,36 @@ aid_symmcrypt_encrypt(
     int state = 0;
 
     if (!data || !cipherbuf || !iv || !key) {
-        state = AID_LOG_ERROR(AID_ERR_NULL_PTR, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
         goto out;
     }
 
     if (!dsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
     if (!(index = aid_symmcrypt_index(type))) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid symmetric encryption algorithm was specified");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "Invalid symmetric encryption algorithm was specified");
         goto out;
     }
 
     if (index->key_type != key->type) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "The type of the provided key is not correct for the specified encryption algorithm");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "The type of the provided key is not correct for the specified encryption algorithm");
         goto out;
     }
 
     if (index->iv_size != ivsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "The size of provided initialization vector is not valid for the specified algorithm");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "The size of provided initialization vector is not valid for the specified algorithm");
     }
 
     if (index->cipherlen(dsize) != bufsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Provided buffer for ciphertext is not of correct size");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "Provided buffer for ciphertext is not of correct size");
         goto out;
     }
 
     if (!key->key) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "A NULL key was provided");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "A NULL key was provided");
         goto out;
     }
 
@@ -173,36 +150,36 @@ aid_symmcrypt_decrypt(
     int state = 0;
 
     if (!data || !plainbuf || !iv || !key) {
-        state = AID_LOG_ERROR(AID_ERR_NULL_PTR, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
         goto out;
     }
 
     if (!dsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
     if (!(index = aid_symmcrypt_index(type))) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid symmetric decryption algorithm was specified");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "Invalid symmetric decryption algorithm was specified");
         goto out;
     }
 
     if (index->key_type != key->type) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "The type of the provided key is not correct for the specified decryption algorithm");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "The type of the provided key is not correct for the specified decryption algorithm");
         goto out;
     }
 
     if (index->iv_size != ivsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "The size of provided initialization vector is not valid for the specified algorithm");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "The size of provided initialization vector is not valid for the specified algorithm");
     }
 
     if (index->plainlen(dsize) != bufsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Provided buffer for plaintext is not of correct size");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "Provided buffer for plaintext is not of correct size");
         goto out;
     }
 
     if (!key->key) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "A NULL key was provided");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "A NULL key was provided");
         goto out;
     }
 
@@ -219,4 +196,34 @@ aid_symmcrypt_decrypt(
 
 out:
     return state;
+}
+
+
+static aid_symmcrypt_index_t const symmcrypt_index[AID_SYMMCRYPT_NUM] =
+{
+    {
+        AID_SYMMKEYS_XSALSA20,
+        24,
+        "XSALSA20",
+        &symmcrypt_encrypt_xsalsa20,
+        &symmcrypt_decrypt_xsalsa20,
+        &symmcrypt_cipherlen_xsalsa20,
+        &symmcrypt_plainlen_xsalsa20
+     }
+};
+
+
+aid_symmcrypt_index_t const *
+aid_symmcrypt_index(
+    aid_symmcrypt_t type)
+{
+
+    if (!type || type > AID_SYMMCRYPT_NUM) {
+        AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid symmetric cipher algorithm specified");
+        return NULL;
+    }
+    else {
+        return &(symmcrypt_index[type - 1]);
+    }
+
 }

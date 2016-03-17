@@ -55,7 +55,6 @@ typedef int (*symmcrypt_encrypt_t)(
     unsigned char const *,
     size_t,
     unsigned char *,
-    size_t,
     unsigned char const *,
     unsigned char const *);
 
@@ -63,7 +62,6 @@ typedef int (*symmcrypt_decrypt_t)(
     unsigned char const *,
     size_t,
     unsigned char *,
-    size_t,
     unsigned char const *,
     unsigned char const *);
 

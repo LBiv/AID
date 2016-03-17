@@ -1,7 +1,9 @@
 #include "aid/crypto/kdf.h"
 
-#include "tweetnacl.h"
+#include <string.h>
+#include <stdlib.h>
 
+#include "tweetnacl.h"
 #include "aid/core/error.h"
 #include "aid/core/log.h"
 #include "aid/crypto/symmkeys.h"
@@ -20,32 +22,10 @@ kdf_compute_curve25519_ecdh_xsalsa20(
         pub,
         priv) != 0)
     {
-        state = AID_LOG_ERROR(AID_ERR_CRYPTO, NULL);
+        AID_LOG_ERROR(state = AID_ERR_CRYPTO, NULL);
     }
 
     return state;
-}
-
-
-aid_kdf_index_t const *
-aid_kdf_index(
-    aid_kdf_t type)
-{
-    switch (type) {
-
-    case AID_KDF_CURVE25519_ECDH_XSALSA20 = 1:
-        return (aid_kdf_index_t const *) &{
-            AID_ASYMKEYS_X25519,
-            AID_SYMMKEYS_XSALSA20,
-            "Curve25519 Elliptic Curve Diffie-Hellman XSalsa20",
-            &kdf_compute_curve25519_ecdh_xsalsa20
-        }
-    default:
-        AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid Key Derivation Function algorithm specified");       
-        return NULL;
-
-    }
-
 }
 
 
@@ -57,32 +37,32 @@ aid_kdf_compute(
     aid_symmkeys_key_t *key)
 {
     aid_kdf_index_t const *index;
-    aid_symmkey_index_t const *key_index;
+    aid_symmkeys_index_t const *key_index;
     int state = 0;
 
     if (!priv || !pub || !key) {
-        state = AID_LOG_ERROR(AID_ERR_NULL_PTR, NULL);
-        goto state;
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
     }
 
     if (!(index = aid_kdf_index(type))) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
-        goto state;
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
     }
 
     if ((index->input_type != priv->type) || (index->input_type != pub->type)) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
-        goto state;
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
     }
 
-    if (!(key_index = aid_symmkey_index(index->key_type))) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
-        goto state;
+    if (!(key_index = aid_symmkeys_index(index->key_type))) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
     }
 
     if (!(key->key = malloc(key_index->key_size))) {
-        state = AID_LOG_ERROR(AID_ERR_NO_MEM, NULL);
-        goto state;
+        AID_LOG_ERROR(state = AID_ERR_NO_MEM, NULL);
+        goto out;
     }
 
     memset(key->key, 0, key_index->key_size);
@@ -104,4 +84,30 @@ cleanup_key:
     aid_symmkeys_cleanup(key);
 out:
     return state;
+}
+
+
+static aid_kdf_index_t const kdf_index[AID_KDF_NUM] =
+{
+    {
+        AID_ASYMKEYS_X25519,
+        AID_SYMMKEYS_XSALSA20,
+        "Curve25519 Elliptic Curve Diffie-Hellman XSalsa20",
+        &kdf_compute_curve25519_ecdh_xsalsa20
+    }
+};
+
+
+aid_kdf_index_t const *
+aid_kdf_index(
+    aid_kdf_t type)
+{
+    if (!type || type > AID_KDF_NUM) {
+        AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid Key Derivation Function algorithm specified");       
+        return NULL;
+    }
+    else {
+        return &(kdf_index[type - 1]);
+    }
+
 }

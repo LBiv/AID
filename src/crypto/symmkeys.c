@@ -1,34 +1,12 @@
 #include "aid/crypto/symmkeys.h"
 
+#include <string.h>
+#include <stdlib.h>
+
 #include "aid/crypto/general.h"
 #include "aid/core/error.h"
 #include "aid/core/log.h"
-#include "aid/core/util.h"
-
-
-aid_symmkeys_index_t const *
-aid_symmkeys_index(
-    aid_symmkeys_t type)
-{
-    switch (type) {
-
-    case AID_SYMMKEYS_AES256:
-        return (aid_symmkeys_index_t const *) &{
-            32,
-            "AES256 CBC"
-        };
-    case AID_SYMMKEYS_XSALSA20:
-        return (aid_symmkeys_index_t const *) &{
-            32,
-            "XSALSA20"
-        };
-    default:
-       AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid symmetric key type specified");
-       return NULL;
-
-    }
-    
-}
+#include "aid/core/utils.h"
 
 
 int
@@ -42,19 +20,19 @@ aid_symmkeys_generate(
     int state = 0;
 
     if (!f_rng || !p_rng || !key) {
-        state = AID_LOG_ERROR(AID_ERR_NULL_PTR, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
         goto out;
     }
 
     if (!(index = aid_symmkeys_index(type))) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
     key->type = type;
 
     if (!(key->key = malloc(index->key_size))) {
-        state = AID_LOG_ERROR(AID_ERR_NO_MEM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NO_MEM, NULL);
         goto out;
     }
 
@@ -65,7 +43,7 @@ aid_symmkeys_generate(
         key->key,
         index->key_size) != 0)
     {
-        state = AID_LOG_ERROR(AID_ERR_RNG, "Failed to generate random bytes for symmetric key");
+        AID_LOG_ERROR(state = AID_ERR_RNG, "Failed to generate random bytes for symmetric key");
         goto cleanup_key;
     }
 
@@ -84,7 +62,7 @@ void
 aid_symmkeys_cleanup(
     aid_symmkeys_key_t *key)
 {
-    adi_symmkeys_index_t const *index;
+    aid_symmkeys_index_t const *index;
 
     if (key) {
 
@@ -97,3 +75,34 @@ aid_symmkeys_cleanup(
         key->type = 0;
     }
 }
+
+
+static aid_symmkeys_index_t const symmkeys_index[AID_SYMMKEYS_NUM] =
+{
+    {
+        32,
+        "AES256 CBC"
+    },
+    {
+        32,
+        "XSALSA20"
+    }
+};
+
+
+aid_symmkeys_index_t const *
+aid_symmkeys_index(
+    aid_symmkeys_t type)
+{
+    
+    if (!type || type > AID_SYMMKEYS_NUM) {
+        AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid symmetric key type specified");
+        return NULL;
+    }
+    else {
+        return &(symmkeys_index[type - 1]);
+    }
+
+}
+
+

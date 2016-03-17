@@ -11,7 +11,7 @@ all: $(OBJS)
 
 
 $(OBJS): %.o: %.c
-	$(CC) $(CFLAGS) -g -I../../include -I ../../deps/tweetnacl -o $@ $<
+	$(CC) $(CFLAGS) -g -I../../include -o $@ $<
 
 clean:
 	rm $(OBJS)

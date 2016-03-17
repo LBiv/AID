@@ -1,10 +1,13 @@
 #include "aid/crypto/asymsign.h"
 
+#include <string.h>
+#include <stdlib.h>
+
 #include "tweetnacl.h"
 
 #include "aid/core/error.h"
 #include "aid/core/log.h"
-#include "aid/core/util.h"
+#include "aid/core/utils.h"
 #include "aid/crypto/asymkeys.h"
 
 
@@ -17,10 +20,10 @@ asymsign_sign_eddsa(
 {
     int state = 0;
     unsigned char *tmp;
-    u64 smlen;
+    unsigned long long smlen;
 
     if (!(tmp = malloc(64 + dsize))) {
-        state = AID_LOG_ERROR(AID_ERR_NO_MEM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NO_MEM, NULL);
         goto out;
     }
 
@@ -31,7 +34,7 @@ asymsign_sign_eddsa(
         dsize,
         key) != 0)
     {
-        state = AID_LOG_ERROR(AID_ERR_CRYPTO, "Failed to sign data with EDDSA");
+        AID_LOG_ERROR(state = AID_ERR_CRYPTO, "Failed to sign data with EDDSA");
         goto cleanup_tmp;
     }
 
@@ -53,16 +56,16 @@ asymsign_verify_eddsa(
 {
     int state = 0, res;
     unsigned char *tmp_m, *tmp_sm;
-    u64 mlen;
+    unsigned long long mlen;
 
     if (!(tmp_m = malloc(64 + dsize))) {
-        state = AID_LOG_ERROR(AID_ERR_NO_MEM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NO_MEM, NULL);
         goto out;
     }
 
     if(!(tmp_sm = malloc(64 + dsize))) {
         free(tmp_m);
-        state = AID_LOG_ERROR(AID_ERR_NO_MEM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NO_MEM, NULL);
         goto out;
     }
 
@@ -73,7 +76,7 @@ asymsign_verify_eddsa(
     res = crypto_sign_open(
         tmp_m,
         &mlen,
-        (const u8)tmp_sm,
+        (unsigned char const *)tmp_sm,
         dsize+64,
         key);
 
@@ -88,7 +91,7 @@ asymsign_verify_eddsa(
         goto out;
     }
     else {
-        state = AID_LOG_ERROR(AID_ERR_CRYPTO, "An error occurred while verifying EDDSA signature");
+        AID_LOG_ERROR(state = AID_ERR_CRYPTO, "An error occurred while verifying EDDSA signature");
         goto out;
     }
 
@@ -97,68 +100,45 @@ out:
 }
 
 
-aid_asymsign_index_t const *
-aid_asymsign_index(
-    aid_asymsign_t type)
-{
-    switch (type) {
-
-    case AID_ASYMSIGN_EDDSA:
-        return (aid_asymkeys_index_t const *) &{
-            AID_ASYMKEYS_ED25519,
-            64,
-            "EdDSA Curve25519",
-            &asymsign_sign_eddsa,
-            &asymsign_verify_eddsa
-        };
-    default:
-        AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid asymmetric signing algorithm specified");
-        return NULL;
-
-    }
-
-}
-
-
 int
 aid_asymsign_sign(
     aid_asymsign_t type,
     unsigned char const *data,
     size_t dsize,
-    aid_asymkeys_private_t const *key,
     unsigned char *sigbuf,
-    size_t bufsize)
+    size_t bufsize,
+    aid_asymkeys_private_t const *key)
 {
-    aid_asymkeys_index_t const *index;
+    aid_asymsign_index_t const *index;
     int state = 0;
 
     if (!data || !key || !sigbuf) {
-        state = AID_LOG_ERROR(AID_ERR_NULL_PTR, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
         goto out;
     }
 
     if (!dsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
-    if (!(index = aid_asymkeys_index(type))) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid signing algorithm was specified");
+    if (!(index = aid_asymsign_index(type))) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "Invalid signing algorithm was specified");
         goto out;
     }
 
     if (index->key_type != key->type) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "The type of the provided key is not correct for the specified signing algorithm");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "The type of the provided key is not correct for the specified signing algorithm");
         goto out;
     }
 
     if (index->sig_size != bufsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "The provided buffer for signature is not of correct size");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "The provided buffer for signature is not of correct size");
         goto out;
     }
 
     if (!key->key) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "A NULL key was provided");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "A NULL key was provided");
         goto out;
     }
 
@@ -187,36 +167,36 @@ aid_asymsign_verify(
     aid_asymkeys_public_t const *key)
 {
 
-    aid_asymkeys_index_t const *index;
+    aid_asymsign_index_t const *index;
     int state = 0;
 
     if (!data || !key || !sigbuf) {
-        state = AID_LOG_ERROR(AID_ERR_NULL_PTR, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
         goto out;
     }
 
     if (!dsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
-    if (!(index = aid_asymkeys_index(type))) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+    if (!(index = aid_asymsign_index(type))) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
     if (index->key_type != key->type) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "The type of the provided key is not correct for the specified signing algorithm");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "The type of the provided key is not correct for the specified signing algorithm");
         goto out;
     }
 
     if (index->sig_size != bufsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "The provided signature buffer is not of correct size");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "The provided signature buffer is not of correct size");
         goto out;
     }
 
     if (!key->key) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "A NULL key was provided");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "A NULL key was provided");
         goto out;
     }
 
@@ -233,3 +213,33 @@ aid_asymsign_verify(
 out:
     return state;
 }
+
+
+static aid_asymsign_index_t const asymsign_index[AID_ASYMSIGN_NUM] =
+{
+    {
+        AID_ASYMKEYS_ED25519,
+        64,
+        "EdDSA Curve25519",
+        &asymsign_sign_eddsa,
+        &asymsign_verify_eddsa
+    }
+};
+
+
+aid_asymsign_index_t const *
+aid_asymsign_index(
+    aid_asymsign_t type)
+{
+    
+    if (!type || type > AID_ASYMSIGN_NUM) {
+        AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid asymmetric signing algorithm specified");
+        return NULL;
+    }
+    else {
+        return &(asymsign_index[type - 1]);
+    }
+
+}
+
+

@@ -21,7 +21,8 @@ typedef struct {
     unsigned char *key; 
 } aid_asymkeys_public_t;
 
-typedef struct { size_t priv_size;
+typedef struct {
+    size_t priv_size;
     size_t pub_size;
     char const *name;
     asymkeys_generate_t generate;

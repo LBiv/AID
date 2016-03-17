@@ -1,10 +1,12 @@
 #include "aid/crypto/asymkeys.h"
 
-#include "tweetnacl.h"
+#include <string.h>
+#include <stdlib.h>
 
+#include "tweetnacl.h"
 #include "aid/core/error.h"
 #include "aid/core/log.h"
-#include "aid/crypto/util.h"
+#include "aid/core/utils.h"
 
 
 static int
@@ -14,32 +16,28 @@ asymkeys_generate_ed25519(
     unsigned char *priv,
     unsigned char *pub)
 {
-    int state = 0, i;
-    u8 d[64];
-    gf p[4];
+    int state = 0;
 
     if (f_rng(
         p_rng,
         priv,
         32) != 0)
     {
-        state = AID_LOG_ERROR(AID_ERR_RNG, "Failed to generate random bytes for private ed25519 key");
+        AID_LOG_ERROR(state = AID_ERR_RNG, "Failed to generate random bytes for private ed25519 key");
         goto out;
     }
 
-    crypto_hash(d, priv, 32);
-    d[0] &= 248;
-    d[31] &= 127;
-    d[31] |= 64;
-
-    scalarbase(p,d);
-    pack(pub,p);
-
-    FOR(i,32) priv[32 + i] = pub[i];
+    if (crypto_sign_pub(
+        priv,
+        pub) != 0)
+    {
+        AID_LOG_ERROR(state = AID_ERR_CRYPTO, "Failed to calculate ed25519 public signing key");
+    }
 
 out:
   return state;
 }
+
 
 static int
 asymkeys_generate_x25519(
@@ -55,7 +53,7 @@ asymkeys_generate_x25519(
         priv,
         32) != 0)
     {
-        state = AID_LOG_ERROR(AID_ERR_RNG, "Failed to generate random bytes for private x25519 key");
+        AID_LOG_ERROR(state = AID_ERR_RNG, "Failed to generate random bytes for private x25519 key");
         goto out;
     }
 
@@ -63,13 +61,14 @@ asymkeys_generate_x25519(
         pub,
         (unsigned char const *)priv) != 0)
     {
-        state = AID_LOG_ERROR(AID_ERR_CRYPTO, "Failed to calculate public x25519 key");
+        AID_LOG_ERROR(state = AID_ERR_CRYPTO, "Failed to calculate public x25519 key");
         goto out;
     }
 
 out:
     return state;
 }
+
 
 static int
 asymkeys_public_ed25519(
@@ -80,6 +79,7 @@ asymkeys_public_ed25519(
 
     return 0;
 }
+
 
 static int
 asymkeys_public_x25519(
@@ -92,43 +92,12 @@ asymkeys_public_x25519(
         pub,
         (unsigned char const *)priv) != 0)
     {
-        state = AID_LOG_ERROR(AID_ERR_CRYPTO, "Failed to calculate public x25519 key");
+        AID_LOG_ERROR(state = AID_ERR_CRYPTO, "Failed to calculate public x25519 key");
         goto out;
     }
 
 out:
     return state;
-}
-
-
-aid_asymkeys_index_t const *
-aid_asymkeys_index(
-    aid_asymkeys_t type)
-{
-    switch (type) {
-
-    case AID_ASYMKEYS_ED25519:
-        return (aid_asymkeys_index_t const *) &{
-            64,
-            32,
-            "Signing Curve25519",
-            &asymkeys_generate_ed25519,
-            &asymkeys_public_ed25519
-        };
-    case AID_ASYMKEYS_X25519:
-        return (aid_asymkeys_index_t const *) &{
-            32,
-            32,
-            "Encryption Curve25519"
-            &asymkeys_generate_x25519,
-            &asymkeys_public_x25519
-        };
-    default:
-        AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid asymmetric key type specified");
-        return NULL;
-
-    }
-
 }
 
 
@@ -144,26 +113,26 @@ aid_asymkeys_generate(
     int state = 0;
 
     if (!f_rng || !p_rng || !priv || !pub) {
-        state = AID_LOG_ERROR(AID_ERR_NULL_PTR, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
         goto out;
     }
 
     if (!(index = aid_asymkeys_index(type))) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
     priv->type = pub->type = type;
 
     if (!(priv->key = malloc(index->priv_size))) {
-        state = AID_LOG_ERROR(AID_ERR_NO_MEM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NO_MEM, NULL);
         goto out;
     }
 
     memset(priv->key, 0, index->priv_size);
 
     if (!(pub->key = malloc(index->pub_size))) {
-        state = AID_LOG_ERROR(AID_ERR_NO_MEM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NO_MEM, NULL);
         goto cleanup_priv;
     }
 
@@ -202,16 +171,16 @@ aid_asymkeys_public(
     int state = 0;
 
     if (!priv || !pub || !priv->key) {
-        state = AID_LOG_ERROR(AID_ERR_NULL_PTR, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
     }
 
     if (!(index = aid_asymkeys_index(priv->type))) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
     if (!(pub->key = malloc(index->pub_size))) {
-        state = AID_LOG_ERROR(AID_ERR_NO_MEM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NO_MEM, NULL);
         goto out;
     }
 
@@ -259,14 +228,48 @@ void
 aid_asymkeys_cleanup_pub(
     aid_asymkeys_public_t *pub)
 {
-    if (priv) {
+    if (pub) {
 
-        if (priv->key) {
-            free(priv->key);
-            priv->key = NULL;
+        if (pub->key) {
+            free(pub->key);
+            pub->key = NULL;
         }
 
-        priv->type = 0;
+        pub->type = 0;
     }
 }
 
+
+static aid_asymkeys_index_t const asymkeys_index[AID_ASYMKEYS_NUM] =
+{
+    {
+        64,
+        32,
+        "Signing Curve25519",
+        &asymkeys_generate_ed25519,
+        &asymkeys_public_ed25519
+     },
+     {
+        32,
+        32,
+        "Encryption Curve25519",
+        &asymkeys_generate_x25519,
+        &asymkeys_public_x25519
+    }
+};
+
+
+aid_asymkeys_index_t const *
+aid_asymkeys_index(
+    aid_asymkeys_t type)
+{
+
+    if (!type || type > AID_ASYMKEYS_NUM) {
+        AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid asymmetric key type specified");
+        return NULL;
+    }
+    else {
+        return &(asymkeys_index[type - 1]);
+    }
+
+}

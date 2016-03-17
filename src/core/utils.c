@@ -1,6 +1,7 @@
 #include "aid/core/utils.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "aid/core/log.h"
 
@@ -8,17 +9,17 @@
 int
 aid_utils_wipe(
     unsigned char *buf,
-    size_t bufzize)
+    size_t bufsize)
 {
     int state = 0;
 
     if (!buf) {
-        state = AID_LOG_ERROR(AID_ERR_NULL_PTR, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
         goto out;
     }
 
     if (!bufsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
@@ -41,12 +42,12 @@ aid_utils_rand(
     int state = 0;
 
     if (!buf) {
-        state = AID_LOG_ERROR(AID_ERR_NULL_PTR, NULL); 
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL); 
         goto out;
     }
 
     if (!bufsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 

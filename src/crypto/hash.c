@@ -1,5 +1,8 @@
 #include "aid/crypto/hash.h"
 
+
+#include <string.h>
+
 #include "tweetnacl.h"
 
 #include "aid/core/error.h"
@@ -19,7 +22,7 @@ hash_digest_sha512(
         data,
         dsize) != 0)
     {
-        state = AID_LOG_ERROR(AID_ERR_CRYPTO, "Failed to computer SHA-512 hash");
+        AID_LOG_ERROR(state = AID_ERR_CRYPTO, "Failed to computer SHA-512 hash");
         goto out;
     }
 
@@ -42,7 +45,7 @@ hash_verify_sha512(
         data,
         dsize) != 0)
     {
-        state = AID_LOG_ERROR(AID_ERR_CRYPTO, "Failed to computer SHA-512 hash");
+        AID_LOG_ERROR(state = AID_ERR_CRYPTO, "Failed to computer SHA-512 hash");
         goto out;
     }
 
@@ -62,28 +65,6 @@ out:
 }
 
 
-
-aid_hash_index_t const *
-aid_hash_index(
-    aid_hash_t type)
-{
-    switch (type) {
-
-    case AID_HASH_SHA512:
-        return (aid_hash_index_t const *) &{
-            64,
-            "SHA-512",
-            &hash_digest_sha512,
-            &hash_verify_sha512
-        };
-    default:
-        AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid hash algorithm specified");
-        return NULL;
-    }
-
-}
-
-
 int
 aid_hash_digest(
     aid_hash_t type,
@@ -96,30 +77,29 @@ aid_hash_digest(
     int state = 0;
 
     if (!data || !hashbuf) {
-        state = AID_LOG_ERROR(AID_ERR_NULL_PTR, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
         goto out;
     }
 
     if (!dsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
     if (!(index = aid_hash_index(type))) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
     if (index->hash_size != bufsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "The provided buffer size does not match the size required by algorithm");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "The provided buffer size does not match the size required by algorithm");
         goto out;
     }
 
     if ((state = index->digest(
         data,
         dsize,
-        hashbuf,
-        bufsize) < 0))
+        hashbuf)) < 0)
     {
         AID_LOG_ERROR(AID_ERR_RETURN, NULL);
         goto out;
@@ -142,30 +122,29 @@ aid_hash_verify(
     int state = 0;
 
     if (!data || !hashbuf) {
-        state = AID_LOG_ERROR(AID_ERR_NULL_PTR, NULL);
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
         goto out;
     }
 
     if (!dsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
     if (!(index = aid_hash_index(type))) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
     if (index->hash_size != bufsize) {
-        state = AID_LOG_ERROR(AID_ERR_BAD_PARAM, "The provided buffer size does not match the size required by algorithm");
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "The provided buffer size does not match the size required by algorithm");
         goto out;
     }
 
     if ((state = index->verify(
         data,
         dsize,
-        hashbuf,
-        bufsize) < 0))
+        hashbuf)) < 0)
     {
         AID_LOG_ERROR(AID_ERR_RETURN, NULL);
         goto out;
@@ -173,5 +152,32 @@ aid_hash_verify(
 
 out:
     return state;
+}
+
+
+static aid_hash_index_t const hash_index[AID_HASH_NUM] =
+{
+     {
+        64,
+        "SHA-512",
+        &hash_digest_sha512,
+        &hash_verify_sha512
+    }
+};
+
+
+aid_hash_index_t const *
+aid_hash_index(
+    aid_hash_t type)
+{
+
+    if (!type || type > AID_HASH_NUM) {
+        AID_LOG_ERROR(AID_ERR_BAD_PARAM, "Invalid hash algorithm specified");
+        return NULL;
+    }
+    else {
+        return &(hash_index[type - 1]);
+    }
+
 }
 
