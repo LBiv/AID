@@ -1,5 +1,4 @@
-#include <check.h>
-#include <stdlib.h>
+#include "test_crypto.h"
 
 
 int

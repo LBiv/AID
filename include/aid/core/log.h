@@ -25,12 +25,7 @@ typedef struct {
 } aid_log_t;
 
 
-__thread aid_log_t aid_log =
-{
-    NULL,    
-    NULL,
-    NULL
-};
+extern __thread aid_log_t aid_log;
 
 
 void
