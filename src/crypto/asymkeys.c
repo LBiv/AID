@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "tweetnacl.h"
 #include "aid/core/error.h"
@@ -121,8 +122,6 @@ aid_asymkeys_generate(
         AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
-
-    priv->type = pub->type = type;
 
     if (!(priv->key = malloc(index->priv_size))) {
         AID_LOG_ERROR(state = AID_ERR_NO_MEM, NULL);

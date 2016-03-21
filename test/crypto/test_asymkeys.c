@@ -1,5 +1,7 @@
 #include "test_crypto.h"
 
+#include "stdio.h"
+
 #include "aid/crypto/asymkeys.h"
 #include "aid/core/utils.h"
  
@@ -7,16 +9,18 @@ START_TEST(test_asymkeys_generate)
 {
     aid_asymkeys_private_t priv;
     aid_asymkeys_public_t pub;
+    char *a = "abc";
     int res;
 
     for(unsigned int i = 1; i <= AID_ASYMKEYS_NUM; ++i) {
         res = aid_asymkeys_generate(
             (aid_asymkeys_t) i,
             &aid_utils_rand,
-            NULL,
+            (void *) a,
             &priv,
             &pub);
 
+        ck_assert_msg(res == 0, "Failed to generatew keys of type %s.\n", aid_asymkeys_index(i)->name);
         ck_assert_msg(priv.type == pub.type, "Types of generated keypair do not match.\n");
 
         aid_asymkeys_cleanup_priv(&priv);
@@ -33,13 +37,14 @@ START_TEST(test_asymkeys_public)
 {
     aid_asymkeys_private_t priv;
     aid_asymkeys_public_t pub1, pub2;
+    char *a = "abc";
     int res;
 
     for(unsigned int i = 1; i <= AID_ASYMKEYS_NUM; ++i) {
         aid_asymkeys_generate(
             (aid_asymkeys_t) i,
             &aid_utils_rand,
-            NULL,
+            (void *) a,
             &priv,
             &pub1);
 
