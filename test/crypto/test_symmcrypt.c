@@ -9,6 +9,7 @@ START_TEST(test_symmcrypt_encrypt_decrypt)
     aid_symmcrypt_index_t const *index;
     aid_symmkeys_key_t key;
     aid_symmkeys_t keytype;
+    char *a = "abc";
     char const *data = "Look at all this new data that we will use to test encryption and encryption.";
     int res;
     size_t dsize, csize, psize, ivsize;
@@ -22,7 +23,7 @@ START_TEST(test_symmcrypt_encrypt_decrypt)
         res = aid_symmkeys_generate(
             keytype,
             &aid_utils_rand,
-            NULL,
+            (void *) a,
             &key);
 
         ck_assert_msg(res == 0, "Failed to generate keys of time %s.\n", aid_symmkeys_index(keytype)->name);
@@ -32,7 +33,7 @@ START_TEST(test_symmcrypt_encrypt_decrypt)
         ck_assert_msg(iv != NULL, "Failed to allocate memory for initialization vector buffer.\n");
 
         res = aid_utils_rand(
-            NULL,
+            (void *) a,
             iv,
             ivsize);
 

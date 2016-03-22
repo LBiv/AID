@@ -2,7 +2,6 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 #include "tweetnacl.h"
 #include "aid/core/error.h"
@@ -44,8 +43,8 @@ static int
 asymkeys_generate_x25519(
     rng_function_t f_rng,
     void *p_rng,
-    unsigned char *pub,
-    unsigned char *priv)
+    unsigned char *priv,
+    unsigned char *pub)
 {
     int state = 0;
 
@@ -171,6 +170,7 @@ aid_asymkeys_public(
 
     if (!priv || !pub || !priv->key) {
         AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
     }
 
     if (!(index = aid_asymkeys_index(priv->type))) {

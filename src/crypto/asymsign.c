@@ -55,33 +55,33 @@ asymsign_verify_eddsa(
     unsigned char const *key)
 {
     int state = 0, res;
-    unsigned char *tmp_m, *tmp_sm;
+    unsigned char *tmp_msg, *tmp_sm;
     unsigned long long mlen;
 
-    if (!(tmp_m = malloc(64 + dsize))) {
+    if (!(tmp_msg = malloc(64 + dsize))) {
         AID_LOG_ERROR(state = AID_ERR_NO_MEM, NULL);
         goto out;
     }
 
     if(!(tmp_sm = malloc(64 + dsize))) {
-        free(tmp_m);
+        free(tmp_msg);
         AID_LOG_ERROR(state = AID_ERR_NO_MEM, NULL);
         goto out;
     }
 
-    memcpy(tmp_m, sigbuf, 64);
-    memcpy(tmp_m, data, dsize);
-    memcpy(tmp_sm, tmp_m, dsize + 64);
+    memcpy(tmp_sm, sigbuf, 64);
+    memcpy(tmp_sm + 64, data, dsize);
 
     res = crypto_sign_open(
-        tmp_m,
+        tmp_msg,
         &mlen,
         (unsigned char const *)tmp_sm,
         dsize+64,
         key);
 
-    free(tmp_m);
+
     free(tmp_sm);
+    free(tmp_msg);
 
     if (res == 0) {
         goto out;
@@ -98,7 +98,6 @@ asymsign_verify_eddsa(
 out:
     return state;
 }
-
 
 int
 aid_asymsign_sign(

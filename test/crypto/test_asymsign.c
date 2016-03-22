@@ -4,11 +4,13 @@
 #include "aid/crypto/asymsign.h"
 #include "aid/core/utils.h"
 
+
 START_TEST(test_asymsign_sign_verify)
 {
     aid_asymkeys_private_t priv;
     aid_asymkeys_public_t pub;
     aid_asymkeys_t keytype;
+    char *a = "abc";
     char const *data = "this is some random data to be tested. random data test test test, it's not very random at all.";
     int res;
     size_t sigsize, dsize;
@@ -21,7 +23,7 @@ START_TEST(test_asymsign_sign_verify)
         res = aid_asymkeys_generate(
             keytype,
             &aid_utils_rand,
-            NULL,
+            (void *) a,
             &priv,
             &pub);
 

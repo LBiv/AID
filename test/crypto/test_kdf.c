@@ -14,6 +14,7 @@ START_TEST(test_kdf_compute)
     aid_asymkeys_t asym_type;
     aid_kdf_index_t const *index;
     aid_symmkeys_key_t key1, key2;
+    char *a = "abc";
     int res;
     size_t symmsize;
 
@@ -25,7 +26,7 @@ START_TEST(test_kdf_compute)
         res = aid_asymkeys_generate(
             asym_type,
             &aid_utils_rand,
-            NULL,
+            (void *) a,
             &priv1,
             &pub1);
 
@@ -34,7 +35,7 @@ START_TEST(test_kdf_compute)
         res = aid_asymkeys_generate(
             asym_type,
             &aid_utils_rand,
-            NULL,
+            (void *) a,
             &priv2,
             &pub2);
 
