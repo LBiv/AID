@@ -19,3 +19,26 @@ aid_log_init(
     aid_log.error = error;
 }
 
+void
+aid_log_debug(
+    char const *fn,
+    char const *func,
+    int lineNo,
+    int err,
+    char const *i);
+
+void
+aid_log_info(
+    char const *fn,
+    char const *func,
+    int lineNo,
+    int err,
+    char const *i);
+
+void
+aid_log_error(
+    char const *fn,
+    char const *func,
+    int lineNo,
+    int err,
+    char const *i);
