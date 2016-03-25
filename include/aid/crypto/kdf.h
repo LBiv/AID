@@ -10,7 +10,7 @@
 #define AID_KDF_NUM 1
 
 typedef enum {
-    AID_KDF_CURVE25519_ECDH__XSALSA20 = 1
+    AID_KDF_CURVE25519_ECDH_XSALSA20 = 1
 } aid_kdf_t;
 
 typedef struct {
