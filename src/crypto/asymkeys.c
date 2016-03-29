@@ -204,6 +204,43 @@ out:
 }
 
 
+int
+aid_asymkeys_to_binary_priv(
+    aid_asymkeys_private_t const *priv,
+    unsigned char *binbuf,
+    size_t bufsize)
+{
+    int state = 0;
+
+    if (!priv || ! binbuf) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+}
+
+
+int
+aid_asymkeys_to_binary_pub(
+    aid_asymkeys_public_t const *pub,
+    unsigned char *binbuf,
+    size_t bufsize);
+
+
+int
+aid_asymkeys_from_binary_priv(
+    unsigned char const *binbuf,
+    size_t bufsize,
+    aid_asymkeys_private_t *priv);
+
+
+int
+aid_asymkeys_from_binary_pub(
+    unsigned char const *binbuf,
+    size_t bufsize,
+    aid_asymkeys_public_t *pub);
+    
+
+
 void
 aid_asymkeys_cleanup_priv(
     aid_asymkeys_private_t *priv)
