@@ -17,3 +17,6 @@ kdf_suite(void);
 Suite *
 symmcrypt_suite(void);
 
+Suite *
+symmkeys_suite(void);
+

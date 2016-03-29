@@ -33,6 +33,18 @@ aid_symmkeys_generate(
     void *p_rng,
     aid_symmkeys_key_t *key);
 
+int
+aid_symmkeys_to_binary(
+    aid_symmkeys_key_t const *key,
+    unsigned char *binbuf,
+    size_t bufsize);
+
+int
+aid_symmkeys_from_binary(
+    unsigned char const *binbuf,
+    size_t bufsize,
+    aid_symmkeys_key_t *key);
+
 void
 aid_symmkeys_cleanup(
     aid_symmkeys_key_t *key);

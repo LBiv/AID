@@ -47,6 +47,30 @@ aid_asymkeys_public(
     aid_asymkeys_private_t const *priv,
     aid_asymkeys_public_t *pub);
 
+int
+aid_asymkeys_to_binary_priv(
+    aid_asymkeys_private_t const *priv,
+    unsigned char *binbuf,
+    size_t bufsize);
+
+int
+aid_asymkeys_to_binary_pub(
+    aid_asymkeys_public_t const *pub,
+    unsigned char *binbuf,
+    size_t bufsize);
+
+int
+aid_asymkeys_from_binary_priv(
+    unsigned char const *binbuf,
+    size_t bufsize,
+    aid_asymkeys_private_t *priv);
+
+int
+aid_asymkeys_from_binary_pub(
+    unsigned char const *binbuf,
+    size_t bufsize,
+    aid_asymkeys_public_t *pub);
+
 void
 aid_asymkeys_cleanup_priv(
     aid_asymkeys_private_t *priv);
