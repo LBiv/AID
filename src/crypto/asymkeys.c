@@ -211,11 +211,23 @@ aid_asymkeys_to_binary_priv(
     size_t bufsize)
 {
     int state = 0;
+    size_t privsize;
 
-    if (!priv || ! binbuf) {
+    if (!priv || !binbuf) {
         AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
         goto out;
     }
+
+    if (bufsize != ((privsize = aid_asymkeys_index(priv->type)->priv_size) + 1)) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    binbuf[0] = (unsigned char) priv->type;
+    memcpy(binbuf + 1, priv->key, privsize);
+
+out:
+    return state;
 }
 
 
@@ -223,23 +235,92 @@ int
 aid_asymkeys_to_binary_pub(
     aid_asymkeys_public_t const *pub,
     unsigned char *binbuf,
-    size_t bufsize);
+    size_t bufsize)
+{
+    int state = 0;
+    size_t pubsize;
+
+    if (!pub || !binbuf) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+
+    if (bufsize != ((pubsize = aid_asymkeys_index(pub->type)->pub_size) + 1)) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    binbuf[0] = (unsigned char) pub->type;
+    memcpy(binbuf + 1, pub->key, pubsize);
+
+out:
+    return state;
+}
 
 
 int
 aid_asymkeys_from_binary_priv(
     unsigned char const *binbuf,
     size_t bufsize,
-    aid_asymkeys_private_t *priv);
+    aid_asymkeys_private_t *priv)
+{
+    int state = 0;
+    size_t privsize;
+
+    if (!priv || !binbuf) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+
+    if ((bufsize - 1) != (privsize = aid_asymkeys_index(priv->type)->priv_size)) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (!(priv->key = malloc(privsize))) {
+        AID_LOG_ERROR(state = AID_ERR_NO_MEM, NULL);
+        goto out;
+    }
+
+    priv->type = binbuf[0];
+    memcpy(priv->key, binbuf + 1, privsize);
+
+out:
+    return state;
+}
 
 
 int
 aid_asymkeys_from_binary_pub(
     unsigned char const *binbuf,
     size_t bufsize,
-    aid_asymkeys_public_t *pub);
-    
+    aid_asymkeys_public_t *pub)
+{
+    int state = 0;
+    size_t pubsize;
 
+    if (!pub || !binbuf) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+
+    if ((bufsize - 1) != (pubsize = aid_asymkeys_index(pub->type)->pub_size)) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (!(pub->key = malloc(pubsize))) {
+        AID_LOG_ERROR(state = AID_ERR_NO_MEM, NULL);
+        goto out;
+    }
+
+    pub->type = binbuf[0];
+    memcpy(pub->key, binbuf + 1, pubsize);
+
+out:
+    return state;
+}
+    
 
 void
 aid_asymkeys_cleanup_priv(
