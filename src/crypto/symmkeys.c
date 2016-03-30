@@ -73,7 +73,7 @@ aid_symmkeys_to_binary(
     }
 
     if ((bufsize - 1) != (keysize = aid_symmkeys_index(key->type)->key_size)) {
-        AID_LOG_ERROR(state = AID_ERR_BAD_PARM, NULL);
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
@@ -99,7 +99,7 @@ aid_symmkeys_from_binary(
         goto out;
     }
 
-    if ((bufsize - 1) != (keysize = aid_symmkeys_index(key->type)->key_size)) {
+    if ((bufsize - 1) != (keysize = aid_symmkeys_index(binbuf[0])->key_size)) {
         AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }

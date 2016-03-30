@@ -272,7 +272,7 @@ aid_asymkeys_from_binary_priv(
         goto out;
     }
 
-    if ((bufsize - 1) != (privsize = aid_asymkeys_index(priv->type)->priv_size)) {
+    if ((bufsize - 1) != (privsize = aid_asymkeys_index(binbuf[0])->priv_size)) {
         AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
@@ -304,7 +304,7 @@ aid_asymkeys_from_binary_pub(
         goto out;
     }
 
-    if ((bufsize - 1) != (pubsize = aid_asymkeys_index(pub->type)->pub_size)) {
+    if ((bufsize - 1) != (pubsize = aid_asymkeys_index(binbuf[0])->pub_size)) {
         AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
