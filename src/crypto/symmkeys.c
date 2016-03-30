@@ -58,6 +58,65 @@ out:
 }
 
 
+int
+aid_symmkeys_to_binary(
+    aid_symmkeys_key_t const *key,
+    unsigned char *binbuf,
+    size_t bufsize)
+{
+    int state = 0;
+    size_t keysize;
+
+    if (!key || !binbuf) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+
+    if ((bufsize - 1) != (keysize = aid_symmkeys_index(key->type)->key_size)) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARM, NULL);
+        goto out;
+    }
+
+    binbuf[0] = (unsigned char) key->type;
+    memcpy(binbuf + 1, key->key, keysize);
+
+out:
+    return state;
+}
+
+
+int
+aid_symmkeys_from_binary(
+    unsigned char const *binbuf,
+    size_t bufsize,
+    aid_symmkeys_key_t *key)
+{
+    int state = 0;
+    size_t keysize;
+
+    if (!key || !binbuf) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+
+    if ((bufsize - 1) != (keysize = aid_symmkeys_index(key->type)->key_size)) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (!(key->key = malloc(keysize))) {
+        AID_LOG_ERROR(state = AID_ERR_NO_MEM, NULL);
+        goto out;
+    }
+
+    key->type = binbuf[0];
+    memcpy(key->key, binbuf + 1, keysize);
+
+out:
+    return state;
+}
+
+
 void
 aid_symmkeys_cleanup(
     aid_symmkeys_key_t *key)
