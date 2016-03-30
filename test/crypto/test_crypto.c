@@ -12,6 +12,7 @@ main(void)
     srunner_add_suite(sr, hash_suite());
     srunner_add_suite(sr, kdf_suite());
     srunner_add_suite(sr, symmcrypt_suite());
+    srunner_add_suite(sr, symmkeys_suite());
 
     srunner_run_all(sr, CK_NORMAL);
     number_failed = srunner_ntests_failed(sr);

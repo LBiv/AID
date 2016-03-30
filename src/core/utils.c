@@ -58,3 +58,41 @@ aid_utils_rand(
 out:
     return state;
 }
+
+/**
+int
+aid_utils_b64url_encode_size(
+    size_t insize,
+    size_t *outsize);
+
+
+int
+aid_utils_b64url_decode_size(
+    size_t insize,
+    size_t *outsize);
+
+
+int
+aid_utils_b64url_encode(
+    unsigned char const *data,
+    size_t dsize,
+    char *encbuf,
+    size_t bufsize);
+
+
+int 
+aid_utils_b64url_decode(
+    char const *data,
+    size_t dsize,
+    unsigned char *decbuf,
+    size_t bufsize);
+
+
+char *
+aid_utils_log_helper(
+    char const *filename,
+    char const *func,
+    int line,
+    int state,
+    char const *info);
+**/
