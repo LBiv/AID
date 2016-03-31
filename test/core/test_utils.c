@@ -1,12 +1,13 @@
 #include "test_core.h"
 
-#include <stdout.h>
+#include <stdio.h>
 
 #include "aid/core/utils.h"
 
 
 START_TEST(test_utils_b64_size)
 {
+    int res;
     size_t binsize1, binsize2, b64size;
 
     res = aid_utils_rand(
@@ -35,12 +36,16 @@ END_TEST
 START_TEST(test_utils_b64_encode)
 {
     char *b64;
+    int res;
     size_t binsize = 212, b64size;
     unsigned char *bin1, *bin2;
 
+    bin1 = malloc(binsize);
+    ck_assert_msg(res == 0, "Failed to allocate memory for binary data.\n");
+
     res = aid_utils_rand(
         NULL,
-        (unsigned char *) bin1,
+        bin1,
         binsize);
 
     ck_assert_msg(res == 0, "Failed to generate random binary data.\n");
