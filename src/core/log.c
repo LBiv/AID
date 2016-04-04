@@ -7,6 +7,8 @@ __thread aid_log_t aid_log =
     NULL
 };
 
+__thread char aid_log_string[512];
+
 
 void
 aid_log_init(

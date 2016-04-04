@@ -17,6 +17,7 @@ aid_utils_rand(
     size_t bufsize);
 
 /** encoding **/
+/** not currently implemented
 int
 aid_utils_b64url_encode_size(
     size_t insize,
@@ -40,9 +41,10 @@ aid_utils_b64url_decode(
     size_t dsize,
     unsigned char *decbuf,
     size_t bufsize);
+**/    
 
 /** logging helper **/
-char *
+int
 aid_utils_log_helper(
     char const *filename,
     char const *func,

@@ -2,9 +2,10 @@
 
 #include <stdio.h>
 
+#include "aid/core/log.h"
 #include "aid/core/utils.h"
 
-
+/** Not currently implemented.
 START_TEST(test_utils_b64_size)
 {
     int res;
@@ -83,11 +84,11 @@ START_TEST(test_utils_b64_encode)
     free(b64);
 }
 END_TEST
-
+*/
 
 START_TEST(test_utils_log_helper)
 {
-    char *res;
+    int res;
     const char
         *filename = "some_file.name",
         *func = "some_function()",
@@ -102,9 +103,8 @@ START_TEST(test_utils_log_helper)
         state,
         info);
 
-    ck_assert_msg(res != NULL, "Log helper failed to create logging string.\n");
-    fprintf(stdout, "Sample log output: %s", res);
-    free(res);
+    ck_assert_msg(res == 0, "Log helper failed to create logging string.\n");
+    fprintf(stdout, "Sample log output: %s", aid_log_string);
 }
 END_TEST
 
@@ -120,8 +120,8 @@ utils_suite(void)
     /* Main test case */
     tc_core = tcase_create("Main");
 
-    tcase_add_test(tc_core, test_utils_b64_size);
-    tcase_add_test(tc_core, test_utils_b64_encode);
+//  tcase_add_test(tc_core, test_utils_b64_size);
+//  tcase_add_test(tc_core, test_utils_b64_encode);
     tcase_add_test(tc_core, test_utils_log_helper);
     suite_add_tcase(s, tc_core);
 

@@ -20,6 +20,7 @@ typedef struct {
 } aid_log_t;
 
 extern __thread aid_log_t aid_log;
+extern __thread char aid_log_string[512];
 
 #define AID_LOG_DEBUG(e, i) aid_log_debug(__FILE__, __func__, __LINE__, (e), (i));
 inline void
@@ -77,9 +78,6 @@ aid_log_error(
             i);
     }
 }
-
-
-
 
 
 void
