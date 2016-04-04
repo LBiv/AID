@@ -34,24 +34,4 @@ aid_provid_token_verify(
     aid_asymkeys_public_t const *oldsignkey); 
 
 
-int
-aid_provid_token_sizeJSON(
-    aid_provid_token_t const *token,
-    size_t *json_size);
-
-
-int
-aid_provid_token_toJSON(
-    aid_provid_token_t const *token,
-    unsigned char *jsonbuf
-    size_t jsonsize);
-
-
-int
-aid_provid_token_fromJSON(
-    unsigned char *jsonbuf,
-    size_t jsonsize,
-    aid_provid_token_t *token);
-
-
 #endif

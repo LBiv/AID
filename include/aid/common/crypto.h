@@ -23,67 +23,56 @@
 #define CURRENT_RNG_CTX
 */
 
-typedef enckey_pub_t aid_asymkeys_public_t;
-typedef enckey_priv_t aid_asymkeys_private_t;
-
-typedef signkey_pub_t aid_asymkeys_public_t;
-typedef signkey_priv_t aid_asymkeys_private_t;
-
-typedef enckey_symm_t aid_symmkeys_key_t;
-
-extern char *rng_ctx;
+/** RNG crypto **/
+extern void *rng_ctx;
 
 
 int
-crypto_rng(
+crypto_rand(
     void *ctx,
     unsigned char *buf,
     size_t bufsize);
 
 
-int
-crypto_generate_asymenc(
-    enckey_pub_t *pub,
-    enckey_priv_t *priv);
-
+/** cryptographic hash **/
+size_t
+crypto_hash_size();
 
 int
-crypto_generate_asymsign(
-    signkey_pub_t *pub,
-    signkey_priv_t *priv);
-
-
-int
-crypto_generate_symmenc(
-    enckey_symm_t *key);
-
-
-int
-crypto_hash(
+crypto_hash_digest(
     unsigned char const *data,
     size_t dsize,
     unsigned char *hashbuf,
-    size_t hashsize);
-
-
-int
-crypto_kdf(
-    enckey_pub_t const *pub,
-    enckey_priv_t const *priv,
-    enckey_symm_t *key);
-
+    size_t bufsize);
 
 int
+crypto_hash_verify(
+    unsigned char const *data,
+    size_t dsize,
+    unsigned char const *hashbuf,
+    size_t bufsize);
+
+
+/** symmetric encryption crypto */
+size_t
+crypto_key_size();
+
+size_t
+crypto_iv_size();
+
+int
+crypto_symmenc_generate(
+    unsigned char *key,
+    size_t keysize);
+
+size_t
 crypto_cipherlen(
-    size_t plainlen,
-    size_t *cipherlen);
+    size_t plainlen);
 
 
-int
+size_t
 crypto_plainlen(
-    size_t cipherlen,
-    size_t *plainlen);
-
+    size_t cipherlen);
 
 int
 crypto_encrypt(
@@ -92,9 +81,9 @@ crypto_encrypt(
     unsigned char *cipherbuf,
     size_t cipherlen,
     unsigned char const *iv,
-    size_t ivlen,
-    enckey_symm_t const *key);
-
+    size_t ivsize,
+    unsigned char const *key,
+    size_t keysize);
 
 int
 crypto_decrypt(
@@ -103,9 +92,33 @@ crypto_decrypt(
     unsigned char *plainbuf,
     size_t plainlen,
     unsigned char const *iv,
-    size_t ivlen,
-    enckey_symm_t const *key);
+    size_t ivsize,
+    unsigned char const *key,
+    size_t keysize);
 
+
+/** asymmetric encryption crypto */
+size_t
+crypto_asymenc_size_priv();
+
+size_t
+crypto_asymenc_size_pub();
+
+int
+crypto_asymenc_generate(
+    unsigned char *priv,
+    size_t privsize,
+    unsigned char *pub,
+    size_t pubsize);
+
+int
+crypto_kdf(
+    unsigned char const *priv,
+    size_t privsize,
+    unsigned char const *pub,
+    size_t pubsize,
+    unsigned char *key,
+    size_t keysize);
 
 int
 crypto_asym_encrypt(
@@ -115,9 +128,10 @@ crypto_asym_encrypt(
     size_t cipherlen,
     unsigned char const *iv,
     size_t ivlen,
-    enckey_pub_t const *pub,
-    enckey_priv_t const *priv);
-
+    unsigned char const *priv,
+    size_t privsize,
+    unsigned char const *pub,
+    size_t pubsize);
 
 int
 crypto_asym_decrypt(
@@ -127,9 +141,35 @@ crypto_asym_decrypt(
     size_t plainlen,
     unsigned char const *iv,
     size_t ivlen,
-    enckey_pub_t const *pub,
-    enckey_priv_t const *priv);
+    unsigned char const *priv,
+    size_t privsize,
+    unsigned char const *pub,
+    size_t pubsize);
 
+
+/** asymmetric signing crypto */
+size_t
+crypto_asymsign_size_sig();
+
+size_t
+crypto_asymsign_size_priv();
+
+size_t
+crypto_asymsign_size_pub();
+
+int
+crypto_asymsign_generate(
+    unsigned char *pub,
+    size_t pubsize,
+    unsigned char *priv,
+    size_t privsize);
+
+int
+crypto_asymsign_public(
+    unsigned char const *priv,
+    size_t privsize,
+    unsigned char *pub,
+    size_t pubsize);
 
 int
 crypto_asym_sign(
@@ -137,8 +177,8 @@ crypto_asym_sign(
     size_t dsize,
     unsigned char *sigbuf,
     size_t sigsize,
-    signkey_priv_t const *priv);
-
+    unsigned char const *priv,
+    size_t privsize);
 
 int
 crypto_asym_verify(
@@ -146,7 +186,8 @@ crypto_asym_verify(
     size_t dsize,
     unsigned char const *sigbuf,
     size_t sigsize,
-    signkey_pub_t const *pub);
+    unsigned char const *pub,
+    size_t pub);
 
 
 #endif
