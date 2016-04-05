@@ -19,7 +19,7 @@
 extern __thread void *rng_ctx;
 
 int
-crypto_rng_init();
+crypto_rng_init(void);
 
 
 int
@@ -31,7 +31,7 @@ crypto_rand(
 
 /** cryptographic hash **/
 size_t
-crypto_hash_size();
+crypto_hash_size(void);
 
 int
 crypto_hash_digest(
@@ -52,10 +52,10 @@ crypto_hash_verify(
 
 /** symmetric encryption crypto */
 size_t
-crypto_key_size();
+crypto_key_size(void);
 
 size_t
-crypto_iv_size();
+crypto_iv_size(void);
 
 int
 crypto_symmenc_generate(
@@ -96,10 +96,10 @@ crypto_decrypt(
 
 /** asymmetric encryption crypto */
 size_t
-crypto_asymenc_size_priv();
+crypto_asymenc_size_priv(void);
 
 size_t
-crypto_asymenc_size_pub();
+crypto_asymenc_size_pub(void);
 
 int
 crypto_asymenc_generate(
@@ -154,13 +154,13 @@ crypto_asym_decrypt(
 
 /** asymmetric signing crypto */
 size_t
-crypto_asymsign_size_sig();
+crypto_asymsign_size_sig(void);
 
 size_t
-crypto_asymsign_size_priv();
+crypto_asymsign_size_priv(void);
 
 size_t
-crypto_asymsign_size_pub();
+crypto_asymsign_size_pub(void);
 
 int
 crypto_asymsign_generate(
