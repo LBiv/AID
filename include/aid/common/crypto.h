@@ -1,14 +1,6 @@
 #ifndef AID_COMMON_CRYPTO_H
 #define AID_COMMON_CRYPTO_H
 
-#include "aid/crypto/asymkeys.h"
-#include "aid/crypto/asymsign.h"
-#include "aid/crypto/symmkeys.h"
-#include "aid/crypto/symmcrypt.h"
-#include "aid/crypto/hash.h"
-#include "aid/crypto/kdf.h"
-#include "aid/core/utils.h"
-
 
 #define CURRENT_HASH AID_HASH_SHA512
 #define CURRENT_KDF AID_KDF_ECDH_XSALSA20
@@ -24,7 +16,10 @@
 */
 
 /** RNG crypto **/
-extern void *rng_ctx;
+extern __thread void *rng_ctx;
+
+int
+crypto_rng_init();
 
 
 int
@@ -45,6 +40,8 @@ crypto_hash_digest(
     unsigned char *hashbuf,
     size_t bufsize);
 
+// 0 if verified successfully
+// 1 if failed to verify
 int
 crypto_hash_verify(
     unsigned char const *data,
@@ -112,6 +109,14 @@ crypto_asymenc_generate(
     size_t pubsize);
 
 int
+crypto_asymenc_public(
+    unsigned char const *priv,
+    size_t privsize,
+    unsigned char *pub,
+    size_t pubsize);
+
+/** kdf and encryption */
+int
 crypto_kdf(
     unsigned char const *priv,
     size_t privsize,
@@ -159,10 +164,10 @@ crypto_asymsign_size_pub();
 
 int
 crypto_asymsign_generate(
-    unsigned char *pub,
-    size_t pubsize,
     unsigned char *priv,
-    size_t privsize);
+    size_t privsize,
+    unsigned char *pub,
+    size_t pubsize);
 
 int
 crypto_asymsign_public(
@@ -172,7 +177,7 @@ crypto_asymsign_public(
     size_t pubsize);
 
 int
-crypto_asym_sign(
+crypto_sign(
     unsigned char const *data,
     size_t dsize,
     unsigned char *sigbuf,
@@ -180,8 +185,10 @@ crypto_asym_sign(
     unsigned char const *priv,
     size_t privsize);
 
+// 0 verified successfully
+// 1 failed to verify
 int
-crypto_asym_verify(
+crypto_verify(
     unsigned char const *data,
     size_t dsize,
     unsigned char const *sigbuf,
