@@ -1,6 +1,7 @@
 #include "aid/common/crypto.h"
 
 
+
 #include "aid/core/error.h"
 #include "aid/core/log.h"
 #include "aid/core/utils.h"
@@ -26,10 +27,29 @@ crypto_rand(
     unsigned char *buf,
     size_t bufsize)
 {
-    return aid_utils_rand(
+    int state = 0;
+
+    if (!ctx || !buf) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+
+    if (!bufsize) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if ((state = aid_utils_rand(
         ctx,
         buf,
-        bufsize);
+        bufsize)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to generate random values");
+        goto out;
+    }
+
+out:
+    return state;
 }
 
 
@@ -47,14 +67,44 @@ crypto_hash_digest(
     unsigned char *hashbuf,
     size_t bufsize)
 {
+    int state = 0;
+    aid_hash_index_t const *index;
+
+    if (!data || !hashbuf) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+
+    if (!dsize) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (!(index = aid_hash_index(CURRENT_HASH))) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (bufsize != (index->hash_size + 1)) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
     data[0] = (unsigned char)CURRENT_HASH;
 
-    return aid_hash_digest(
+    if ((state = aid_hash_digest(
         CURRENT_HASH,
         data + 1,
         dsize - 1,
         hashbuf,
-        bufsize);
+        bufsize)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to calculate cryptographic hash");
+        goto out;
+    }
+
+out:
+    return state;
 }
 
 // 0 if verified successfully
@@ -66,14 +116,45 @@ crypto_hash_verify(
     unsigned char const *hashbuf,
     size_t bufsize)
 {
-    aid_hash_t type = data[0];
+    int state = 0;
+    aid_hash_index_t const *index;
+    unsigned char type;
 
-    return aid_hash_verify(
+    if (!data || !hashbuf) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+
+    if (!dsize) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (!(index = aid_hash_index(CURRENT_HASH))) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (bufsize != (index->hash_size + 1)) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    type = data[0]; 
+
+    if ((state = aid_hash_digest(
         type,
         data + 1,
         dsize - 1,
         hashbuf,
-        bufsize);
+        bufsize)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to verify cryptographic hash");
+        goto out;
+    }
+
+out:
+    return state;
 }
 
 
@@ -96,6 +177,11 @@ crypto_symmenc_generate(
     int state = 0;
     aid_symmkeys_key_t enckey;
 
+    if (!key) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+
     if ((state = aid_symmkeys_generate(
         CURRENT_SYMM_ENCKEY,
         &crypto_rand,
@@ -114,7 +200,7 @@ crypto_symmenc_generate(
         AID_LOG_ERROR(AID_ERR_RETURN, "Failed to convert encryption key to binary");
     }
 
-    aid_symmkeys_cleanup(enckey);
+    aid_symmkeys_cleanup(&enckey);
 
 out:
     return state;
@@ -150,6 +236,31 @@ crypto_encrypt(
     int state = 0;
     aid_symmkeys_key_t enckey;
 
+    if (!data || !cipherbuf || !iv || !key) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+
+    if (!dsize) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (cipherlen != crypto_cipherlen(dsize)) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (ivsize != crypto_iv_size()) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (keysize != crypto_key_size()) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
     if ((state = aid_symmkeys_from_binary(
         key,
         keysize,
@@ -169,7 +280,7 @@ crypto_encrypt(
         cipherlen - 1,
         iv,
         ivsize,
-        (aid_symmkeys_key_t const *)&key)) < 0)
+        (aid_symmkeys_key_t const *)&enckey)) < 0)
     {
         AID_LOG_ERROR(AID_ERR_RETURN, "Failed to encrypt data with encryption");
     }
@@ -190,22 +301,144 @@ crypto_decrypt(
     unsigned char const *iv,
     size_t ivsize,
     unsigned char const *key,
-    size_t keysize);
+    size_t keysize)
+{
+    int state = 0;
+    aid_symmkeys_key_t enckey;
+
+    if (!data || !plainbuf || !iv || !key) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+
+    if (!dsize) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (plainlen != crypto_plainlen(dsize)) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (ivsize != crypto_iv_size()) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (keysize != crypto_key_size()) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (data[0] != key[0]) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "Key is not of correct type for ciphertext");
+        goto out;
+    }
+
+    if ((state = aid_symmkeys_from_binary(
+        key,
+        keysize,
+        &enckey)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to deserialize encryption key");
+        goto out;
+    }
+
+    if ((state = aid_symmcrypt_decrypt(
+        data[0],
+        data + 1,
+        dsize - 1,
+        plainbuf,
+        plainlen,
+        iv,
+        ivsize,
+        (aid_symmkeys_key_t const *)&enckey)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to decrypt data with encryption");
+    }
+
+    aid_symmkeys_cleanup(&enckey);
+
+out:
+    return state;
+}
 
 
 /** asymmetric encryption crypto */
 size_t
-crypto_asymenc_size_priv(void);
+crypto_asymenc_size_priv(void) {
+    return aid_asymkeys_index(CURRENT_ASYM_ENCKEY)->priv_size + 1;
+}
+
 
 size_t
-crypto_asymenc_size_pub(void);
+crypto_asymenc_size_pub(void) {
+    return aid_asymkeys_index(CURRENT_ASYM_ENCKEY)->pub_size + 1;
+}
 
 int
 crypto_asymenc_generate(
     unsigned char *priv,
     size_t privsize,
     unsigned char *pub,
-    size_t pubsize);
+    size_t pubsize)
+{
+    aid_asymkeys_index_t const *index;
+    int state = 0;
+    aid_asymkeys_priv_t privkey;
+    aid_asymkeys_pub_t pubkey;
+
+    if (!priv || !pub) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+
+    if (privsize != crypto_asymenc_size_priv()) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (pubsize != crypto_asymenc_size_pub()) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if ((state = aid_asymkeys_generate(
+        CURRENT_ASYM_ENCKEY,
+        &crypto_rand,
+        rng_ctx,
+        &privkey,
+        &pubkey)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to encryption keypair");
+        goto out;
+    }
+
+    if ((state = aid_asymkeys_to_binary_priv(
+        (aid_asymkeys_private_t const *) privkey,
+        priv,
+        privsize)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to deserialize private key");
+        goto cleanup_keys;
+    }
+
+    if ((state = aid_asymkeys_to_binary_pub(
+        (aid_asymkeys_public_t const *) pubkey,
+        pub,
+        pubsize)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to deserialize public key");
+        goto cleanup_keys;
+    }
+
+cleanup_keys:
+    aid_asymkeys_cleanup_priv(&priv);
+    aid_asymkeys_cleanup_pub(&pub);
+out:
+    return state;
+}
 
 int
 crypto_asymenc_public(
