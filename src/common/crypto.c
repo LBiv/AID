@@ -1,7 +1,6 @@
 #include "aid/common/crypto.h"
 
 
-
 #include "aid/core/error.h"
 #include "aid/core/log.h"
 #include "aid/core/utils.h"
@@ -445,7 +444,59 @@ crypto_asymenc_public(
     unsigned char const *priv,
     size_t privsize,
     unsigned char *pub,
-    size_t pubsize);
+    size_t pubsize)
+{
+    aid_asymkeys_priv_t privkey;
+    aid_asymkeys_pub_t pubkey;
+    int state;
+
+    if (!priv || !pub) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+
+    if (privsize != crypto_asymenc_size_priv()) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (pubsize != crypto_asymenc_size_pub()) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if ((state = aid_asymkeys_from_binary_priv(
+        priv,
+        privsize,
+        &aid_asymkeys_priv_t)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to deserialize private key");
+        goto out;
+    }
+
+    if ((state = aid_asymkeys_public(
+        (aid_asymkeys_priv_t const *) &privkey,
+        &pubkey)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to calculate public key");
+        goto cleanup_priv;
+    }
+
+    if ((state = aid_asymkeys_to_binary_pub(
+        (aid_asymkeys_pub_t const *) &pubkey,
+        pub,
+        pubsize)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to serialize public key");
+    }
+
+    aid_asymkeys_cleanup_pub(&pubkey);
+
+cleanup_priv:
+    aid_asymkeys_cleanup_priv(&privkey);
+out:
+    return state;
+}
 
 /** kdf and encryption */
 int
@@ -455,7 +506,10 @@ crypto_kdf(
     unsigned char const *pub,
     size_t pubsize,
     unsigned char *key,
-    size_t keysize);
+    size_t keysize)
+{
+
+}
 
 int
 crypto_asym_encrypt(
@@ -468,7 +522,10 @@ crypto_asym_encrypt(
     unsigned char const *priv,
     size_t privsize,
     unsigned char const *pub,
-    size_t pubsize);
+    size_t pubsize)
+{
+
+}
 
 int
 crypto_asym_decrypt(
@@ -481,7 +538,10 @@ crypto_asym_decrypt(
     unsigned char const *priv,
     size_t privsize,
     unsigned char const *pub,
-    size_t pubsize);
+    size_t pubsize)
+{
+
+}
 
 
 /** asymmetric signing crypto */
