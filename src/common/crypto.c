@@ -1,5 +1,6 @@
 #include "aid/common/crypto.h"
 
+#include <stdlib.h>
 
 #include "aid/core/error.h"
 #include "aid/core/log.h"
@@ -11,11 +12,13 @@
 #include "aid/crypto/symmcrypt.h"
 #include "aid/crypto/symmkeys.h"
 
-extern __thread void *rng_ctx;
+__thread void *rng_ctx;
 
 
 int
 crypto_rng_init(void) {
+    rng_ctx = malloc(1);
+
     return 0;
 }
 
@@ -89,14 +92,14 @@ crypto_hash_digest(
         goto out;
     }
 
-    data[0] = (unsigned char)CURRENT_HASH;
+    hashbuf[0] = (unsigned char)CURRENT_HASH;
 
     if ((state = aid_hash_digest(
         CURRENT_HASH,
-        data + 1,
-        dsize - 1,
-        hashbuf,
-        bufsize)) < 0)
+        data,
+        dsize,
+        hashbuf + 1,
+        bufsize - 1)) < 0)
     {
         AID_LOG_ERROR(AID_ERR_RETURN, "Failed to calculate cryptographic hash");
         goto out;
@@ -139,14 +142,14 @@ crypto_hash_verify(
         goto out;
     }
 
-    type = data[0]; 
+    type = hashbuf[0]; 
 
-    if ((state = aid_hash_digest(
+    if ((state = aid_hash_verify(
         type,
-        data + 1,
-        dsize - 1,
-        hashbuf,
-        bufsize)) < 0)
+        data,
+        dsize,
+        hashbuf + 1,
+        bufsize - 1)) < 0)
     {
         AID_LOG_ERROR(AID_ERR_RETURN, "Failed to verify cryptographic hash");
         goto out;
@@ -192,7 +195,7 @@ crypto_symmenc_generate(
     }
 
     if ((state = aid_symmkeys_to_binary(
-        (aid_symmkeys_key_t const *) enckey,
+        (aid_symmkeys_key_t const *) &enckey,
         key,
         keysize)) < 0)
     {
@@ -330,7 +333,7 @@ crypto_decrypt(
         goto out;
     }
 
-    if (data[0] != key[0]) {
+    if (aid_symmcrypt_index(data[0])->key_type != key[0]) {
         AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "Key is not of correct type for ciphertext");
         goto out;
     }
@@ -383,10 +386,9 @@ crypto_asymenc_generate(
     unsigned char *pub,
     size_t pubsize)
 {
-    aid_asymkeys_index_t const *index;
+    aid_asymkeys_private_t privkey;
+    aid_asymkeys_public_t pubkey;
     int state = 0;
-    aid_asymkeys_priv_t privkey;
-    aid_asymkeys_pub_t pubkey;
 
     if (!priv || !pub) {
         AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
@@ -415,7 +417,7 @@ crypto_asymenc_generate(
     }
 
     if ((state = aid_asymkeys_to_binary_priv(
-        (aid_asymkeys_private_t const *) privkey,
+        (aid_asymkeys_private_t const *) &privkey,
         priv,
         privsize)) < 0)
     {
@@ -424,7 +426,7 @@ crypto_asymenc_generate(
     }
 
     if ((state = aid_asymkeys_to_binary_pub(
-        (aid_asymkeys_public_t const *) pubkey,
+        (aid_asymkeys_public_t const *) &pubkey,
         pub,
         pubsize)) < 0)
     {
@@ -433,8 +435,8 @@ crypto_asymenc_generate(
     }
 
 cleanup_keys:
-    aid_asymkeys_cleanup_priv(&priv);
-    aid_asymkeys_cleanup_pub(&pub);
+    aid_asymkeys_cleanup_priv(&privkey);
+    aid_asymkeys_cleanup_pub(&pubkey);
 out:
     return state;
 }
@@ -446,8 +448,8 @@ crypto_asymenc_public(
     unsigned char *pub,
     size_t pubsize)
 {
-    aid_asymkeys_priv_t privkey;
-    aid_asymkeys_pub_t pubkey;
+    aid_asymkeys_private_t privkey;
+    aid_asymkeys_public_t pubkey;
     int state;
 
     if (!priv || !pub) {
@@ -468,14 +470,14 @@ crypto_asymenc_public(
     if ((state = aid_asymkeys_from_binary_priv(
         priv,
         privsize,
-        &aid_asymkeys_priv_t)) < 0)
+        &privkey)) < 0)
     {
         AID_LOG_ERROR(AID_ERR_RETURN, "Failed to deserialize private key");
         goto out;
     }
 
     if ((state = aid_asymkeys_public(
-        (aid_asymkeys_priv_t const *) &privkey,
+        (aid_asymkeys_private_t const *) &privkey,
         &pubkey)) < 0)
     {
         AID_LOG_ERROR(AID_ERR_RETURN, "Failed to calculate public key");
@@ -483,7 +485,7 @@ crypto_asymenc_public(
     }
 
     if ((state = aid_asymkeys_to_binary_pub(
-        (aid_asymkeys_pub_t const *) &pubkey,
+        (aid_asymkeys_public_t const *) &pubkey,
         pub,
         pubsize)) < 0)
     {
@@ -595,7 +597,7 @@ crypto_asym_encrypt(
 {
     aid_asymkeys_private_t privkey;
     aid_asymkeys_public_t pubkey;
-    aid_symkeys_key_t enckey;    
+    aid_symmkeys_key_t enckey;    
     int state = 0;
 
     if (!data || !cipherbuf || !iv ||  !priv || !pub) {
@@ -665,8 +667,8 @@ crypto_asym_encrypt(
         cipherbuf + 1,
         cipherlen - 1,
         iv,
-        ivsize,
-        (aid_symmkeys_t const *) &enckey)) < 0)
+        ivlen,
+        (aid_symmkeys_key_t const *) &enckey)) < 0)
     {
         AID_LOG_ERROR(AID_ERR_RETURN, "Failed to encrypt data");
         goto cleanup_enckey;
@@ -697,7 +699,7 @@ crypto_asym_decrypt(
 {
     aid_asymkeys_private_t privkey;
     aid_asymkeys_public_t pubkey;
-    aid_symkeys_key_t enckey;    
+    aid_symmkeys_key_t enckey;    
     int state = 0;
 
     if (!data || !plainbuf || !iv ||  !priv || !pub) {
@@ -765,8 +767,8 @@ crypto_asym_decrypt(
         plainbuf,
         plainlen,
         iv,
-        ivsize,
-        (aid_symmkeys_t const *) &enckey)) < 0)
+        ivlen,
+        (aid_symmkeys_key_t const *) &enckey)) < 0)
     {
         AID_LOG_ERROR(AID_ERR_RETURN, "Failed to decrypt data");
         goto cleanup_enckey;
@@ -787,19 +789,19 @@ out:
 /** asymmetric signing crypto */
 size_t
 crypto_asymsign_size_sig(void) {
-    return aid_asymsign_index(CURRENT_ASYMSIGN)->sig_size;
+    return aid_asymsign_index(CURRENT_ASYMSIGN)->sig_size + 1;
 }
 
 
 size_t
 crypto_asymsign_size_priv(void) {
-    return aid_asymsign_index(CURRENT_ASYMSIGN)->priv_size;
+    return aid_asymkeys_index(aid_asymsign_index(CURRENT_ASYM_SIGNKEY)->key_type)->priv_size + 1;
 }
 
 
 size_t
 crypto_asymsign_size_pub(void) {
-    return aid_asymsign_index(CURRENT_ASYMSIGN)->pub_size;
+    return aid_asymkeys_index(aid_asymsign_index(CURRENT_ASYM_SIGNKEY)->key_type)->pub_size + 1;
 }
 
 
@@ -810,22 +812,21 @@ crypto_asymsign_generate(
     unsigned char *pub,
     size_t pubsize)
 {
-    aid_asymkeys_index_t const *index;
+    aid_asymkeys_private_t privkey;
+    aid_asymkeys_public_t pubkey;
     int state = 0;
-    aid_asymkeys_priv_t privkey;
-    aid_asymkeys_pub_t pubkey;
 
     if (!priv || !pub) {
         AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
         goto out;
     }
 
-    if (privsize != crypto_asymenc_size_priv()) {
+    if (privsize != crypto_asymsign_size_priv()) {
         AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
-    if (pubsize != crypto_asymenc_size_pub()) {
+    if (pubsize != crypto_asymsign_size_pub()) {
         AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
@@ -842,7 +843,7 @@ crypto_asymsign_generate(
     }
 
     if ((state = aid_asymkeys_to_binary_priv(
-        (aid_asymkeys_private_t const *) privkey,
+        (aid_asymkeys_private_t const *) &privkey,
         priv,
         privsize)) < 0)
     {
@@ -851,7 +852,7 @@ crypto_asymsign_generate(
     }
 
     if ((state = aid_asymkeys_to_binary_pub(
-        (aid_asymkeys_public_t const *) pubkey,
+        (aid_asymkeys_public_t const *) &pubkey,
         pub,
         pubsize)) < 0)
     {
@@ -860,8 +861,8 @@ crypto_asymsign_generate(
     }
 
 cleanup_keys:
-    aid_asymkeys_cleanup_priv(&priv);
-    aid_asymkeys_cleanup_pub(&pub);
+    aid_asymkeys_cleanup_priv(&privkey);
+    aid_asymkeys_cleanup_pub(&pubkey);
 out:
     return state;
 }
@@ -874,8 +875,8 @@ crypto_asymsign_public(
     unsigned char *pub,
     size_t pubsize)
 {
-    aid_asymkeys_priv_t privkey;
-    aid_asymkeys_pub_t pubkey;
+    aid_asymkeys_private_t privkey;
+    aid_asymkeys_public_t pubkey;
     int state;
 
     if (!priv || !pub) {
@@ -883,12 +884,12 @@ crypto_asymsign_public(
         goto out;
     }
 
-    if (privsize != crypto_asymenc_size_priv()) {
+    if (privsize != crypto_asymsign_size_priv()) {
         AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
 
-    if (pubsize != crypto_asymenc_size_pub()) {
+    if (pubsize != crypto_asymsign_size_pub()) {
         AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
@@ -896,14 +897,14 @@ crypto_asymsign_public(
     if ((state = aid_asymkeys_from_binary_priv(
         priv,
         privsize,
-        &aid_asymkeys_priv_t)) < 0)
+        &privkey)) < 0)
     {
         AID_LOG_ERROR(AID_ERR_RETURN, "Failed to deserialize private key");
         goto out;
     }
 
     if ((state = aid_asymkeys_public(
-        (aid_asymkeys_priv_t const *) &privkey,
+        (aid_asymkeys_private_t const *) &privkey,
         &pubkey)) < 0)
     {
         AID_LOG_ERROR(AID_ERR_RETURN, "Failed to calculate public key");
@@ -911,7 +912,7 @@ crypto_asymsign_public(
     }
 
     if ((state = aid_asymkeys_to_binary_pub(
-        (aid_asymkeys_pub_t const *) &pubkey,
+        (aid_asymkeys_public_t const *) &pubkey,
         pub,
         pubsize)) < 0)
     {
@@ -936,7 +937,54 @@ crypto_sign(
     unsigned char const *priv,
     size_t privsize)
 {
+    aid_asymkeys_private_t privkey;
+    int state = 0;
 
+    if (!data || !sigbuf || !priv) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
+
+    if (!dsize) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (privsize != crypto_asymsign_size_priv()) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+    
+    if (sigsize != crypto_asymsign_size_sig()) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if ((state = aid_asymkeys_from_binary_priv(
+        priv,
+        privsize,
+        &privkey)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to deserialize private key");
+        goto out;
+    }
+
+    sigbuf[0] = CURRENT_ASYMSIGN;
+
+    if ((state = aid_asymsign_sign(
+        CURRENT_ASYMSIGN,
+        data,
+        dsize,
+        sigbuf + 1,
+        sigsize - 1,
+        (aid_asymkeys_private_t const *) &privkey)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to compute asymmetric signature");
+    }
+
+    aid_asymkeys_cleanup_priv(&privkey);
+out:
+    return state;
 }
 
 // 0 verified successfully
@@ -948,7 +996,57 @@ crypto_verify(
     unsigned char const *sigbuf,
     size_t sigsize,
     unsigned char const *pub,
-    size_t pub);
+    size_t pubsize)
+{
+    aid_asymkeys_public_t pubkey;
+    int state = 0;
 
+    if (!data || !sigbuf || !pub) {
+        AID_LOG_ERROR(state = AID_ERR_NULL_PTR, NULL);
+        goto out;
+    }
 
+    if (!dsize) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
 
+    if (pubsize != crypto_asymsign_size_pub()) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+    
+    if (sigsize != crypto_asymsign_size_sig()) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+        goto out;
+    }
+
+    if (pub[0] != aid_asymsign_index(sigbuf[0])->key_type) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "Can not verify signature because key-type does not match signing algorithm");
+        goto out;
+    }
+
+    if ((state = aid_asymkeys_from_binary_pub(
+        pub,
+        pubsize,
+        &pubkey)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to deserialize public key");
+        goto out;
+    }
+
+    if ((state = aid_asymsign_verify(
+        sigbuf[0],
+        data,
+        dsize,
+        sigbuf + 1,
+        sigsize - 1,
+        (aid_asymkeys_public_t const *) &pubkey)) < 0)
+    {
+        AID_LOG_ERROR(AID_ERR_RETURN, "Failed to compute asymmetric signature");
+    }
+
+    aid_asymkeys_cleanup_pub(&pubkey);
+out:
+    return state;
+}

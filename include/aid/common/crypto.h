@@ -1,11 +1,12 @@
 #ifndef AID_COMMON_CRYPTO_H
 #define AID_COMMON_CRYPTO_H
 
+#include <stddef.h>
 
 #define CURRENT_HASH AID_HASH_SHA512
-#define CURRENT_KDF AID_KDF_ECDH_XSALSA20
+#define CURRENT_KDF AID_KDF_CURVE25519_ECDH_XSALSA20
 #define CURRENT_SYMMCRYPT AID_SYMMCRYPT_XSALSA20
-#define CURRENT_ASYMSIGN AID_ASYMSIGN_EdDSA
+#define CURRENT_ASYMSIGN AID_ASYMSIGN_EDDSA
 #define CURRENT_SYMM_ENCKEY AID_SYMMKEYS_XSALSA20
 #define CURRENT_ASYM_ENCKEY AID_ASYMKEYS_X25519
 #define CURRENT_ASYM_SIGNKEY AID_ASYMKEYS_ED25519
@@ -194,7 +195,7 @@ crypto_verify(
     unsigned char const *sigbuf,
     size_t sigsize,
     unsigned char const *pub,
-    size_t pub);
+    size_t pubsize);
 
 
 #endif

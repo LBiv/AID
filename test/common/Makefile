@@ -6,12 +6,12 @@ test: $(TEST_PGM)
 	@echo $(SRC_SUBDIRS)
 	@echo $(SUB_LIBS)
 
-SRC_DEPS = crypto core common
+SRC_DEPS = common crypto core
 DEPS_DEPS = tweetnacl
 
 
-SUBDIRS = ../../src/crypto ../../src/core ../../deps/tweetnacl
-SUB_LIBS = -L ../../src/crypto -L ../../src/core -L ../../deps/tweetnacl -lcrypto -lcore -ltweetnacl
+SUBDIRS =  ../../src/common ../../src/crypto ../../src/core ../../deps/tweetnacl
+SUB_LIBS = -L ../../src/common -L ../../src/crypto -L ../../src/core -L ../../deps/tweetnacl -lcommon -lcrypto -lcore -ltweetnacl
 #SUB_LIBS=$(patsubst %,%/lib$(notdir %%).a,$(SUBDIRS))
 PHONYTGTS=$(foreach SUBDIR,$(SUBDIRS),$(notdir $(SUBDIR)))
 LIB_CHECK=/usr/lib/libcheck.so

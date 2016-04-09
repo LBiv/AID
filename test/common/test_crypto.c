@@ -1,6 +1,7 @@
 #include "test_common.h"
 
 #include <string.h>
+#include <stdio.h>
 
 #include "aid/common/crypto.h"
 
@@ -12,7 +13,7 @@ START_TEST(test_common_crypto_hash)
     unsigned char *hashbuf;
 
     res = crypto_rng_init();
-    cK_assert_msg(res == 0, "Failed to initialize random number generator.\n");
+    ck_assert_msg(res == 0, "Failed to initialize random number generator.\n");
 
     bufsize = crypto_hash_size();
     hashbuf = malloc(bufsize);
@@ -41,7 +42,7 @@ START_TEST(test_common_crypto_hash)
 
     ck_assert_msg(res == 0, "Failed to sucessfully verify that the cryptographic hash.\n");
 
-    memset(hashbuf, 0, bufsize);
+    memset(hashbuf, 1, bufsize);
 
     res = crypto_hash_verify(
         (unsigned char const *) data,
@@ -49,8 +50,9 @@ START_TEST(test_common_crypto_hash)
         (unsigned char const *) hashbuf,
         bufsize);
 
-    ck_assert_msg(res == 0, "Failed to detect invalid cryptographic hash.\n");
+    ck_assert_msg(res == 1, "Failed to detect invalid cryptographic hash.\n");
     free(hashbuf);
+    free(rng_ctx);
 }
 END_TEST
 
@@ -63,7 +65,7 @@ START_TEST(test_common_crypto_symmenc)
     unsigned char *key, *iv, *cipher, *plain;
 
     res = crypto_rng_init();
-    cK_assert_msg(res == 0, "Failed to initialize random number generator.\n");
+    ck_assert_msg(res == 0, "Failed to initialize random number generator.\n");
 
     keysize = crypto_key_size();
     ivsize = crypto_iv_size();
@@ -107,7 +109,7 @@ START_TEST(test_common_crypto_symmenc)
         (unsigned char const *) iv,
         ivsize,
         (unsigned char const *) key,
-        key_size);
+        keysize);
 
     ck_assert_msg(res == 0, "Failed to encrypt data with symmetric key.\n");
 
@@ -125,7 +127,7 @@ START_TEST(test_common_crypto_symmenc)
         (unsigned char const *) iv,
         ivsize,
         (unsigned char const *) key,
-        key_size);
+        keysize);
 
     ck_assert_msg(res == 0, "Failed to decrypt data with symmetric key.\n");
     ck_assert_msg(dsize == plainlen, "Data length was corrupted by encryption.\n");
@@ -136,6 +138,7 @@ START_TEST(test_common_crypto_symmenc)
     free(iv);
     free(plain);
     free(cipher);
+    free(rng_ctx);
 }
 END_TEST
 
@@ -147,7 +150,7 @@ START_TEST(test_common_crypto_asymenc)
     unsigned char *pub1, *pub2, *priv1;
 
     res = crypto_rng_init();
-    cK_assert_msg(res == 0, "Failed to initialize random number generator.\n");
+    ck_assert_msg(res == 0, "Failed to initialize random number generator.\n");
 
     privsize = crypto_asymenc_size_priv();
     pubsize = crypto_asymenc_size_pub();
@@ -174,32 +177,32 @@ START_TEST(test_common_crypto_asymenc)
         pubsize);
 
     ck_assert_msg(res == 0, "Failed to calculate public key from private one.\n");
-    res == memcmp(pub1, pub2, pubsize);
+    res = memcmp(pub1, pub2, pubsize);
     ck_assert_msg(res == 0, "Public key was calculated incorrectly.\n");
 
     free(priv1);
     free(pub1);
     free(pub2);
+    free(rng_ctx);
 }
 END_TEST
 
 
 START_TEST(test_common_crypto_kdf)
 {
-    char *a = "abc";
     int res = 0;
     size_t privsize, pubsize, keysize;
     unsigned char *pub1, *pub2, *priv1, *priv2, *key1, *key2;
 
     res = crypto_rng_init();
-    cK_assert_msg(res == 0, "Failed to initialize random number generator.\n");
+    ck_assert_msg(res == 0, "Failed to initialize random number generator.\n");
 
     privsize = crypto_asymenc_size_priv();
     pubsize = crypto_asymenc_size_pub();
     keysize = crypto_key_size();
 
     pub1 = malloc(pubsize);
-    pub1 = malloc(pubsize);
+    pub2 = malloc(pubsize);
     priv1 = malloc(privsize);
     priv2 = malloc(privsize);
     key1 = malloc(keysize);
@@ -249,7 +252,7 @@ START_TEST(test_common_crypto_kdf)
         keysize);
 
     ck_assert_msg(res == 0, "Failed to compute symmetric key with kdf.\n");
-    res == memcmp(key1, key2, keysize);
+    res = memcmp(key1, key2, keysize);
     ck_assert_msg(res == 0, "The KDF failed yield the same symmetric key from different asymmetric pieces.\n");
 
     free(priv1);
@@ -264,14 +267,13 @@ END_TEST
 
 START_TEST(test_common_crypto_asymsign)
 {
-    char *a = "abc";
     int res;
     size_t pubsize, privsize, sigsize, dsize=411;
-    unsigned char dsize[411];
+    unsigned char data[411];
     unsigned char *priv1, *pub1, *pub2, *sig;
 
     res = crypto_rng_init();
-    cK_assert_msg(res == 0, "Failed to initialize random number generator.\n");
+    ck_assert_msg(res == 0, "Failed to initialize random number generator.\n");
 
     privsize = crypto_asymsign_size_priv();
     pubsize = crypto_asymsign_size_pub();
@@ -284,7 +286,7 @@ START_TEST(test_common_crypto_asymsign)
 
     ck_assert_msg((
         priv1 &&
-        pub1 &&'
+        pub1 &&
         pub2 &&
         sig),
         "Failed to allocate memory for asymmetric signing keys and signature.\n");
@@ -334,9 +336,9 @@ START_TEST(test_common_crypto_asymsign)
 
     ck_assert_msg(res == 0, "Failed to verify valid public signature.\n");
 
-    memset(sig, 0, sigsize);
+    memset(sig, 1, sigsize);
 
-    res = crypto_verifty(
+    res = crypto_verify(
         (unsigned char const *)data,
         dsize,
         (unsigned char const *)sig,
@@ -350,6 +352,7 @@ START_TEST(test_common_crypto_asymsign)
     free(pub1);
     free(pub2);
     free(sig);
+    free(rng_ctx);
 }
 END_TEST
 
