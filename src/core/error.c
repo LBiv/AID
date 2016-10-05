@@ -20,5 +20,7 @@ char const *aid_error_array[AID_ERR_NUM] = {
     "AID_ERR_BAD_PARAM [-3]: Invalid parameter was passed into function",
     "AID_ERR_NO_MEM [-4]: Failed to allocate memory on the heap",
     "AID_ERR_RNG [-5]: Error generating random values",
-    "AID_ERR_CRYPTO [-6]: Error occurred in the cryptographic library"
+    "AID_ERR_CRYPTO [-6]: Error occurred in the cryptographic library",
+    "AID_ERR_COMMON [-7]: Error occurred in the common library",
+    "AID_ERR_COMMON [-8]: Error occurred in the data library"
 };

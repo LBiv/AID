@@ -15,7 +15,6 @@ aid_provid_token_create(
     size_t oldprivkey_size;
     aid_provid_token_t *token)
 {
-
 }
 
 

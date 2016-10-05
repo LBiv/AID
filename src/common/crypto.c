@@ -248,7 +248,7 @@ crypto_encrypt(
         goto out;
     }
 
-    if (cipherlen != crypto_cipherlen(dsize)) {
+    if (cipherlen < crypto_cipherlen(dsize)) {
         AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
         goto out;
     }
@@ -530,8 +530,8 @@ crypto_kdf(
         goto out;
     }
 
-    if (keysize != crypto_key_size()) {
-        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, NULL);
+    if (keysize < crypto_key_size()) {
+        AID_LOG_ERROR(state = AID_ERR_BAD_PARAM, "Buffer provided for the key is of insufficient size");
         goto out;
     }
 
